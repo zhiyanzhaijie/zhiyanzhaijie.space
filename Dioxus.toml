@@ -1,0 +1,26 @@
+[application]
+
+[web.app]
+
+# HTML title tag content
+title = "zhiyanzhaijie-space"
+
+[web.resource]
+asset_dir = "assets"
+base_path = "/"
+# Additional CSS style files
+style = []
+
+# Additional JavaScript files
+script = []
+
+
+[web.dev-server]
+# The directory to serve static assets from.
+asset_dir = "assets"
+
+
+[web.resource.dev]
+# Javascript code file
+# serve: [dev-server] only
+script = []
