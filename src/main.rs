@@ -1,6 +1,5 @@
 use dioxus::document::Stylesheet;
 use dioxus::prelude::*;
-use log::Level;
 use web_sys::window;
 
 mod components;
@@ -51,14 +50,13 @@ fn App() -> Element {
     const TW_STYLES: Asset = asset!("/assets/tailwind.css");
 
     rsx! {
-        title { "我的博客吗" }
+        title { "我的博客" }
         Stylesheet {
           href: TW_STYLES
         }
         main {
             class: "w-screen h-screen flex flex-col overflow-hidden",
             ThemeSwitcher {}
-            "main"
             Router::<Route> {}
         }
     }
