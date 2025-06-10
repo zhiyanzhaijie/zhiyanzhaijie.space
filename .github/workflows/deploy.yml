@@ -2,9 +2,6 @@
     name: Deploy zyzj_blog
 
     on:
-      push:
-        branches:
-          - master  
       workflow_dispatch: 
 
     env:
