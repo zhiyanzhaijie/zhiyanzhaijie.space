@@ -66,7 +66,7 @@ fn App() -> Element {
 fn main() {
     #[cfg(target_arch = "wasm32")]
     {
-        match console_log::init_with_level(Level::Debug) {
+        match console_log::init_with_level(log::Level::Debug) {
             Ok(_) => {
                 log::info!("console_log initialized successfully at level: Debug");
             }
