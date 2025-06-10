@@ -1,0 +1,87 @@
+    # .github/workflows/deploy.yml
+    name: Deploy zyzj_blog
+
+    on:
+      workflow_dispatch: 
+
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
+      DOCKERFILE_PATH: ./Dockerfile
+      BUILD_CONTEXT: . 
+
+    jobs:
+      build-and-push-image:
+        name: Build and Push Docker Image
+        runs-on: ubuntu-latest
+        permissions:
+          contents: read      # 需要读取仓库内容 (检出代码)
+          packages: write     # 需要写入 GitHub Packages (GHCR)
+
+        steps:
+          - name: Checkout repository
+            uses: actions/checkout@v4
+
+          - name: Log in to GitHub Container Registry
+            uses: docker/login-action@v3
+            with:
+              registry: ${{ env.REGISTRY }}
+              username: ${{ github.actor }} # 通常是触发 workflow 的用户
+              password: ${{ secrets.GITHUB_TOKEN }} # GITHUB_TOKEN 是自动提供的
+
+          - name: Set up Docker Buildx
+            uses: docker/setup-buildx-action@v3
+
+          - name: Extract Docker metadata (tags, labels)
+            id: meta # 给这个步骤一个ID，以便后续引用其输出
+            uses: docker/metadata-action@v5
+            with:
+              images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+              tags: | # 定义镜像标签规则
+                type=sha,prefix=git-      # 例如: git-a1b2c3d
+                type=raw,value=latest,enable={{is_default_branch}} # 只有默认分支才打 latest 标签
+
+          - name: Build and push Docker image
+            uses: docker/build-push-action@v5
+            with:
+              context: ${{ env.BUILD_CONTEXT }}
+              file: ${{ env.DOCKERFILE_PATH }}
+              push: true # 推送镜像到 registry
+              tags: ${{ steps.meta.outputs.tags }} # 使用上一步生成的标签
+              labels: ${{ steps.meta.outputs.labels }} # 使用上一步生成的标签
+              cache-from: type=gha # 启用 GitHub Actions 缓存以加快构建
+              cache-to: type=gha,mode=max
+
+      deploy-to-server:
+        name: Deploy to Server
+        needs: build-and-push-image
+        runs-on: ubuntu-latest
+
+        steps:
+          - name: Deploy to Server via SSH
+            uses: appleboy/ssh-action@v1.0.3 
+            with:
+              host: ${{ secrets.SSH_HOST }}             # 服务器主机名或IP (通过 Secrets 配置)
+              username: ${{ secrets.SSH_USERNAME }}       # 服务器上的部署用户名 (通过 Secrets 配置)
+              key: ${{ secrets.SSH_PRIVATE_KEY }}        # SSH 私钥 (通过 Secrets 配置)
+              port: ${{ secrets.SSH_PORT || 22 }}        # SSH 端口，默认为 22 (通过 Secrets 配置, 可选)
+              script: |
+                set -e # 如果任何命令失败，脚本立即退出
+
+                echo "==> Navigating to application directory on server..."
+                cd /data/zhiyanzhaijie_blog/
+
+                echo "==> Pulling the latest image from GHCR..."
+                docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+                echo "==> Stopping and removing old application containers..."
+                docker compose down
+
+                echo "==> Starting new application containers with the updated image..."
+                docker compose up -d
+
+                echo "==> Cleaning up unused Docker images..."
+                docker image prune -af
+
+                echo "==> Deployment successful!"
+    
