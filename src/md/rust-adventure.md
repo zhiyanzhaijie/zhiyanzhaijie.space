@@ -2,6 +2,7 @@
 title: 我的 Rust 冒险之旅
 date: 2024-03-10
 slug: rust-adventure
+tags: ["dioxus"]
 ---
 
 学习 Rust 是一段充满挑战和回报的旅程。

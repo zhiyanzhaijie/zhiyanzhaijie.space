@@ -2,6 +2,7 @@
 title: 深入探索 Dioxus
 date: 2024-02-20
 slug: exploring-dioxus
+tags: ["dioxus"]
 ---
 
 在上一篇文章中，我简单介绍了 Dioxus。现在，让我们更深入地了解它的一些核心概念和交互能力。
@@ -46,7 +47,6 @@ pub fn ThemeSwitcher() -> Element {
             class: "theme-switcher p-4",
             span { class: "mr-2", "Select Theme:" }
             select {
-                // 根据当前主题动态添加一些 Tailwind 样式
                 class: "p-2 rounded border bg-gray-100 dark:bg-gray-700 dark:text-white focus:ring-2",
                 oninput: move |event| {
                     let new_theme_str = event.value();

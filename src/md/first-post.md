@@ -2,6 +2,7 @@
 title: 我的第一篇博客
 date: 2024-01-15
 slug: first-post
+tags: ["dioxus"]
 ---
 
 欢迎来到我的博客！这是我的第一篇文章。

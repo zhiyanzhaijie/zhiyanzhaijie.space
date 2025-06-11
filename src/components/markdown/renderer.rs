@@ -4,6 +4,7 @@ use markdown::ParseOptions;
 use crate::components::interactive::code_runner::CodeRunnerComponent;
 use crate::components::interactive::color_picker::ColorPickerComponent;
 use crate::components::interactive::counter::InteractiveCounterButton;
+use crate::components::interactive::test::TestHear;
 use crate::components::markdown::node::RenderMdastNode;
 use crate::components::markdown::registry::ComponentRegistry;
 use crate::register_component;
@@ -21,6 +22,12 @@ pub fn MarkdownRenderer(content: String) -> Element {
             .to_string();
         rsx! {
             InteractiveCounterButton { label: label }
+        }
+    });
+
+    register_component!(registry, "TestHear", |params| {
+        rsx! {
+            TestHear {  }
         }
     });
 
