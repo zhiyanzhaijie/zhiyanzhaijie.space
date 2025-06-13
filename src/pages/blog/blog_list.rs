@@ -3,18 +3,19 @@ use crate::routes::Route;
 use dioxus::prelude::*;
 
 #[component]
-pub fn Home() -> Element {
+pub fn BlogList() -> Element {
     rsx! {
         div {
             class: "space-y-1",
 
+            // 文章列表 - 极简设计
             if POSTS.is_empty() {
                 div {
                     class: "text-center py-12 text-muted-foreground",
                     "暂无文章"
                 }
             } else {
-                {POSTS.iter().take(10).map(|(post_meta, _post_content)| {
+                {POSTS.iter().map(|(post_meta, _post_content)| {
                     let slug_clone = post_meta.slug.clone();
                     let title_clone = post_meta.title.clone();
                     let date_clone = post_meta.date.clone();

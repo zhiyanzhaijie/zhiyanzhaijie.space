@@ -181,12 +181,19 @@ pub fn RenderMdastNode(node: mdast::Node, registry: ComponentRegistry) -> Elemen
 
             // 渲染高亮代码
             rsx! {
+              figure {
+                class: "relative border border-border rounded my-5",
+                figcaption {
+                  class: "absolute inline-block text-red-400 -top-3 left-3 bg-background px-2 py-1 text-sm rounded-xl border border-border leading-none",
+                  "{lang}"
+                }
                 pre {
                     code {
                         class: format!("language-{}", lang),
                         dangerous_inner_html: "{highlighted_code}"
                     }
                 }
+              }
             }
         }
         mdast::Node::InlineCode(inline_code) => rsx! {

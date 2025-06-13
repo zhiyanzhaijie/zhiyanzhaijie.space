@@ -8,7 +8,6 @@ mod pages;
 mod routes;
 mod utils;
 
-use crate::components::common::ThemeSwitcher;
 use crate::routes::Route;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -54,11 +53,7 @@ fn App() -> Element {
         Stylesheet {
           href: TW_STYLES
         }
-        main {
-            class: "w-screen h-screen flex flex-col overflow-hidden",
-            ThemeSwitcher {}
-            Router::<Route> {}
-        }
+        Router::<Route> {}
     }
 }
 

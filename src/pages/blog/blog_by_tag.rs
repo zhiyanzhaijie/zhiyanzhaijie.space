@@ -3,18 +3,44 @@ use crate::routes::Route;
 use dioxus::prelude::*;
 
 #[component]
-pub fn Home() -> Element {
+pub fn BlogByTag(tag: String) -> Element {
+    // 过滤指定标签的文章
+    let filtered_posts: Vec<_> = POSTS
+        .iter()
+        .filter(|(post_meta, _)| {
+            post_meta
+                .tags
+                .as_ref()
+                .map(|tags| tags.contains(&tag))
+                .unwrap_or(false)
+        })
+        .collect();
+
     rsx! {
         div {
             class: "space-y-1",
 
-            if POSTS.is_empty() {
+            // 标签标题
+            div {
+                class: "mb-6 pb-4 border-b border-border/30",
+                h1 {
+                    class: "text-lg font-medium text-foreground mb-2",
+                    "#{tag}"
+                }
+                p {
+                    class: "text-sm text-muted-foreground",
+                    "{filtered_posts.len()} 篇文章"
+                }
+            }
+
+            // 文章列表 - 极简设计
+            if filtered_posts.is_empty() {
                 div {
                     class: "text-center py-12 text-muted-foreground",
-                    "暂无文章"
+                    "该标签下暂无文章"
                 }
             } else {
-                {POSTS.iter().take(10).map(|(post_meta, _post_content)| {
+                {filtered_posts.into_iter().map(|(post_meta, _post_content)| {
                     let slug_clone = post_meta.slug.clone();
                     let title_clone = post_meta.title.clone();
                     let date_clone = post_meta.date.clone();
@@ -37,15 +63,16 @@ pub fn Home() -> Element {
                                     "{title_clone}"
                                 }
 
-                                // 标签
+                                // 其他标签
                                 if let Some(tags) = &tags_clone {
-                                    if let Some(first_tag) = tags.first() {
+                                    {tags.iter().filter(|t| *t != &tag).take(1).map(|other_tag| rsx! {
                                         Link {
-                                            to: Route::TagList {},
-                                            class: "flex-shrink-0 text-xs bg-secondary/60 text-secondary-foreground px-2 py-1 rounded-full hover:bg-secondary transition-colors",
-                                            "{first_tag}"
+                                            key: "{other_tag}",
+                                            to: Route::BlogByTag { tag: other_tag.clone() },
+                                            class: "flex-shrink-0 text-xs bg-secondary/40 text-secondary-foreground px-2 py-1 rounded-full hover:bg-secondary/60 transition-colors",
+                                            "{other_tag}"
                                         }
-                                    }
+                                    })}
                                 }
                             }
 

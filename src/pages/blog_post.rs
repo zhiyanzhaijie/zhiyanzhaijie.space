@@ -23,15 +23,7 @@ pub fn BlogPost(slug: String) -> Element {
                         h1 { class: "text-3xl font-bold text-foreground mb-2", {meta.title.clone()} }
                         p { class: "text-sm text-muted-foreground mb-8", {meta.date.clone()} }
 
-                        // 使用方法说明
-                        div { class: "usage-guide bg-muted p-4 rounded-md mb-8",
-                            h3 { class: "text-lg font-semibold mb-2", "在Markdown中使用交互组件:" }
-                            ul { class: "list-disc pl-5 space-y-2",
-                                li { "计数器: [按钮文本](interactive:increment_counter)" }
-                                li { "颜色选择器: [选择颜色](interactive:color_picker?color=%23ff0000)" }
-                                li { "代码执行器: [运行](interactive:code_runner?language=rust&code=fn%20main()%20%7B%0A%20%20println!(%22Hello%2C%20world!%22)%3B%0A%7D)" }
-                            }
-                        }
+                        div { class: "bg-muted-foreground w-full h-[1px] mb-8"}
 
                         MarkdownRenderer { content: content.clone() }
                     }
