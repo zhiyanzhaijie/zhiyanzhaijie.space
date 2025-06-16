@@ -63,7 +63,7 @@ pub fn PageNotFound(route: Vec<String>) -> Element {
                     class: "flex flex-col sm:flex-row items-center justify-center gap-4",
 
                     Link {
-                        to: Route::Home {},
+                        to: Route::BlogList {},
                         class: "inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium",
                         svg {
                             class: "w-5 h-5 mr-2",

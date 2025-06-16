@@ -15,7 +15,7 @@ pub fn BlogPost(slug: String) -> Element {
                     nav { class: "mb-6 py-4",
                         Link {
                             class: "text-primary hover:text-primary/80 flex items-center",
-                            to: Route::Home {},
+                              to: Route::BlogList { },
                             "← 返回首页"
                         }
                     }
@@ -37,7 +37,7 @@ pub fn BlogPost(slug: String) -> Element {
                     p { class: "text-muted-foreground mb-6", "无法找到指定的文章。" }
                     Link {
                         class: "btn text-primary-foreground bg-primary px-4 py-2 rounded-md inline-block",
-                        to: Route::Home {},
+                        to: Route::BlogList { },
                         "返回首页"
                     }
                 }

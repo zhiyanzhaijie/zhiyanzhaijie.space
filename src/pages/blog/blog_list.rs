@@ -6,9 +6,7 @@ use dioxus::prelude::*;
 pub fn BlogList() -> Element {
     rsx! {
         div {
-            class: "space-y-1",
-
-            // 文章列表 - 极简设计
+            class: "space-y-1 w-[61.8%]",
             if POSTS.is_empty() {
                 div {
                     class: "text-center py-12 text-muted-foreground",
@@ -26,7 +24,6 @@ pub fn BlogList() -> Element {
                             key: "{slug_clone}",
                             class: "group flex items-center justify-between py-3 px-4 hover:bg-muted/30 transition-colors duration-150 rounded-sm",
 
-                            // 左侧：标题和标签
                             div {
                                 class: "flex items-center space-x-3 min-w-0 flex-1",
 
