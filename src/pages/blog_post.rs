@@ -21,7 +21,23 @@ pub fn BlogPost(slug: String) -> Element {
                     }
                     article { class: "container mx-auto",
                         h1 { class: "text-3xl font-bold text-foreground mb-2", {meta.title.clone()} }
-                        p { class: "text-sm text-muted-foreground mb-8", {meta.date.clone()} }
+                        p { class: "text-sm text-muted-foreground mb-2", {meta.date.clone()} }
+
+                        // Tags display
+                        if let Some(ref tags) = meta.tags {
+                            div { class: "mb-8",
+                                for (i, tag) in tags.iter().enumerate() {
+                                    if i > 0 {
+                                        span { class: "text-muted-foreground", ", " }
+                                    }
+                                    Link {
+                                        to: Route::BlogByTag { tag: tag.clone() },
+                                        class: "text-primary hover:text-primary/80 underline transition-colors",
+                                        "#{tag}"
+                                    }
+                                }
+                            }
+                        }
 
                         div { class: "bg-muted-foreground w-full h-[1px] mb-8"}
 

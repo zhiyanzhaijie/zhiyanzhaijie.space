@@ -7,7 +7,7 @@ tags: ["dioxus"]
 
 在上一篇文章中，我简单介绍了 Dioxus。现在，让我们更深入地了解它的一些核心概念和交互能力。
 
-## 组件和 Props
+## 组件和 Props ma1
 
 就像 React 一样，Dioxus 的 UI 由可重用的组件构建。你可以传递数据（props）给子组件。
 

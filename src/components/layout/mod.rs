@@ -13,12 +13,15 @@ pub fn MainLayout() -> Element {
         div {
             class: "min-h-screen bg-background text-foreground font-sans",
 
-            // 顶部导航区域 - 简约设计
             header {
-                class: "border-b border-border/30 px-10 pb-2 pt-18",
+                class: "sticky top-0 z-50 w-full bg-background/90 px-12 pb-2 pt-12 relative",
+
+                div {
+                    class: "absolute -bottom-15 left-0 w-full h-15 bg-gradient-to-b from-background/90 to-transparent pointer-events-none z-50"
+                }
 
                 nav {
-                    class: "container flex justify-between px-30",
+                    class: "w-full flex justify-between",
 
                     div {
                         class: "flex items-center justify-start space-x-4",
@@ -108,7 +111,7 @@ pub fn MainLayout() -> Element {
 
             // 主要内容区域
             main {
-                class: "container mx-auto px-10 py-8",
+                class: "container mx-auto px-10 py-8 relative z-10",
                 Outlet::<Route> {}
             }
         }

@@ -39,7 +39,7 @@ pub fn ThemeSwitcher() -> Element {
         div {
             class: "theme-switcher p-2", // Container for the button
             button {
-                class: "p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-200 dark:hover:bg-gray-700",
+                class: "p-1 rounded focus:outline-none cursor-pointer",
                 onclick: handle_theme_toggle,
                 title: title_for_button,
                 {icon_element_to_display}
@@ -79,7 +79,7 @@ pub fn MoonSVG() -> Element {
                 stroke: "currentColor",
                 stroke_linecap: "round",
                 stroke_linejoin: "round",
-                stroke_width: "1.5",
+                stroke_width: "1",
                 d: "M12 21a9 9 0 0 0 8.997-9.252a7 7 0 0 1-10.371-8.643A9 9 0 0 0 12 21"
             }
         }

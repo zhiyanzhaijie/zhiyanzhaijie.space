@@ -9,6 +9,7 @@ mod routes;
 mod utils;
 
 use crate::routes::Route;
+use components::animated_bird::AnimatedBird;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum AppTheme {
@@ -53,6 +54,8 @@ fn App() -> Element {
         Stylesheet {
           href: TW_STYLES
         }
+        // Animated ASCII Art Bird Logo Silhouette Background
+        AnimatedBird {}
         Router::<Route> {}
     }
 }
