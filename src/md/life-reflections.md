@@ -2,7 +2,7 @@
 title: 慢下来，感受生活的美好
 date: 2024-01-18
 slug: life-reflections
-tags: ["生活", "感悟", "成长"]
+tags: ["life", "reflection", "growth"]
 ---
 
 # 慢下来，感受生活的美好

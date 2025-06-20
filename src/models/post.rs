@@ -4,6 +4,7 @@ use once_cell::sync::Lazy;
 use serde::Deserialize;
 use std::sync::Arc;
 
+use crate::models::tag::Tag;
 use crate::utils::url::percent_decode;
 
 // Reference static resources defined in app.rs
@@ -26,7 +27,7 @@ pub struct PostMetadata {
     pub title: String,
     pub date: String, // Keep as string for display, but parse for sorting
     pub slug: String,
-    pub tags: Option<Vec<String>>,
+    pub tags: Option<Vec<Tag>>,
     pub word_count: usize,
 }
 
@@ -49,11 +50,32 @@ pub fn load_markdown_posts() -> Vec<(PostMetadata, String)> {
                 match serde_yaml::from_str::<RawPostMetadata>(frontmatter_str) {
                     Ok(raw_meta) => {
                         let word_count = calculate_word_count(md_content);
+
+                        // Convert string tags to Tag enum
+                        let tags = raw_meta
+                            .tags
+                            .map(|tag_strings| {
+                                tag_strings
+                                    .iter()
+                                    .filter_map(|tag_str| match tag_str.parse::<Tag>() {
+                                        Ok(tag) => Some(tag),
+                                        Err(e) => {
+                                            eprintln!(
+                                                "Warning: Unknown tag '{}' in post '{}': {}",
+                                                tag_str, raw_meta.title, e
+                                            );
+                                            None
+                                        }
+                                    })
+                                    .collect::<Vec<Tag>>()
+                            })
+                            .filter(|tags| !tags.is_empty()); // Remove empty tag lists
+
                         let metadata = PostMetadata {
                             title: raw_meta.title,
                             date: raw_meta.date,
                             slug: raw_meta.slug,
-                            tags: raw_meta.tags,
+                            tags,
                             word_count,
                         };
                         posts_data.push((metadata, md_content.to_string()));

@@ -1,14 +1,15 @@
 use crate::models::post::POSTS;
+use crate::models::tag::Tag;
 use crate::routes::Route;
 use dioxus::prelude::*;
+use dioxus_i18n::t;
 use std::collections::HashMap;
 
 #[component]
 pub fn TagList() -> Element {
     // 收集所有标签和对应的文章
     let tag_posts = use_memo(|| {
-        let mut posts_map: HashMap<String, Vec<&crate::models::post::PostMetadata>> =
-            HashMap::new();
+        let mut posts_map: HashMap<Tag, Vec<&crate::models::post::PostMetadata>> = HashMap::new();
 
         for (post_meta, _) in POSTS.iter() {
             if let Some(tags) = &post_meta.tags {
@@ -25,13 +26,13 @@ pub fn TagList() -> Element {
 
     // 按标签名排序
     let sorted_tags = use_memo(move || {
-        let mut tags: Vec<String> = tag_posts.read().keys().cloned().collect();
-        tags.sort();
+        let mut tags: Vec<Tag> = tag_posts.read().keys().cloned().collect();
+        tags.sort_by(|a, b| a.to_string().cmp(&b.to_string()));
         tags
     });
 
     // 用于追踪当前活跃的标签section - 使用点击而非滚动检测
-    let mut active_tag = use_signal(|| None::<String>);
+    let mut active_tag = use_signal(|| None::<Tag>);
 
     rsx! {
         div {
@@ -46,11 +47,13 @@ pub fn TagList() -> Element {
                     class: "mb-8 pb-6 border-b border-border/30",
                     h1 {
                         class: "text-lg font-medium text-foreground mb-2",
-                        "标签"
+                        { t!("page-tag-list-title") }
                     }
                     p {
                         class: "text-sm text-muted-foreground",
-                        "{sorted_tags.read().len()} 个标签，{POSTS.len()} 篇文章"
+                        { t!("page-tag-list-stats",
+                             tagCount: sorted_tags.read().len(),
+                             postCount: POSTS.len()) }
                     }
                 }
 
@@ -69,14 +72,15 @@ pub fn TagList() -> Element {
                             class: "space-y-4",
 
                             // 标签标题
-                            div {
+                            Link {
                                 class: "flex items-center space-x-3 pb-3 border-b border-border/20",
+                                to: Route::BlogByTag { tag: tag.to_string() },
                                 h2 {
-                                    class: "text-base font-medium text-foreground",
-                                    "#{tag}"
+                                    class: "text-base font-medium text-foreground hover:underline",
+                                    "#{ t!(tag.i18n_key()) }"
                                 }
                                 span {
-                                    class: "text-xs text-muted-foreground bg-secondary/40 px-2 py-1 rounded-full",
+                                    class: "flex-shrink-0 text-xs bg-secondary/60 text-secondary-foreground px-2 py-1 rounded-full hover:bg-secondary transition-colors",
                                     "{sorted_posts.len()}"
                                 }
                             }
@@ -107,7 +111,7 @@ pub fn TagList() -> Element {
                                                 class: "flex items-center space-x-3 text-xs text-muted-foreground flex-shrink-0 ml-4",
                                                 span {
                                                     class: "font-mono",
-                                                    "{post_meta.word_count} 字"
+                                                    { t!("page-blog-post-word-count", count: post_meta.word_count) }
                                                 }
                                                 span {
                                                     class: "font-mono",
@@ -125,16 +129,16 @@ pub fn TagList() -> Element {
 
             if !sorted_tags.is_empty() {
                 nav {
-                    class: "w-48 flex-shrink-0 sticky top-24 self-start",
+                    class: "w-48 flex-shrink-0 sticky top-36 self-start",
 
                     // 添加导航标题
                     div {
                         class: "mb-4 text-xs font-medium text-muted-foreground uppercase tracking-wide text-right",
-                        "快速导航"
+                        "Quick Navigation"
                     }
 
                     div {
-                        class: "space-y-2 max-h-96 overflow-y-auto overflow-x-hidden",
+                        class: "space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto overflow-x-hidden",
                         {sorted_tags.read().iter().enumerate().map(|(index, tag)| {
                             // 为每个标签生成不同的颜色
                             let hue = (index as f32 * 137.5) % 360.0; // 黄金角度分布
@@ -156,60 +160,57 @@ pub fn TagList() -> Element {
                                     class: "block w-full cursor-pointer group",
 
                                     div {
-                                        class: "relative flex items-center justify-end overflow-hidden",
+                                        class: "relative flex items-center h-12 overflow-hidden transition-colors duration-300",
 
-                                        // 色块 - 从右侧开始，右侧无圆角
-                                        div {
-                                            class: format!(
-                                                "relative h-8 transition-all duration-500 ease-in-out {}",
-                                                if is_active {
-                                                    "w-26 rounded-l-lg shadow-lg"
-                                                } else {
-                                                    "w-1 rounded-l-sm shadow-sm group-hover:w-2 group-hover:shadow-md"
-                                                }
-                                            ),
-                                            style: "{color_style}",
-
-                                            // 激活状态的文字（在色块内部）
-                                            if is_active {
-                                                div {
-                                                    class: "absolute inset-0 flex items-center justify-center opacity-100 transition-opacity duration-300 delay-200",
-                                                    div {
-                                                        class: "text-right",
-                                                        span {
-                                                            class: "text-sm font-medium text-white drop-shadow-sm",
-                                                            "{tag}"
-                                                        }
-                                                        span {
-                                                            class: "text-xs text-white/90 ml-1",
-                                                            "{post_count}"
-                                                        }
-                                                    }
-                                                }
-                                            }
-
-                                            // 激活状态的微妙光效
-                                            if is_active {
-                                                div {
-                                                    class: "absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 rounded-l-lg"
-                                                }
+                                        // 渐变背景层 - active时显示
+                                        if is_active {
+                                            div {
+                                                class: "absolute -z-1 inset-0 transition-opacity duration-300 bg-[linear-gradient(to_left,color-mix(in_oklch,var(--color-ring),transparent_88%)_0%,transparent_62%)]",
                                             }
                                         }
 
-                                        // 非激活状态的文字（在色块外部右侧）
-                                        if !is_active {
-                                            div {
-                                                class: "absolute right-3 flex flex-col items-end opacity-100 transition-all duration-300 group-hover:opacity-100",
+                                        // 文字内容区域 - 使用flex布局自动贴近右侧色块
+                                        div {
+                                            class: "flex-1 flex flex-col items-end pr-3 transition-all duration-300",
 
-                                                div {
-                                                    class: "text-sm font-medium text-muted-foreground group-hover:text-foreground truncate max-w-32 text-right transition-colors duration-200",
-                                                    "{tag}"
-                                                }
-                                                div {
-                                                    class: "text-xs text-muted-foreground/70 group-hover:text-muted-foreground transition-colors duration-200",
-                                                    "{post_count} 篇"
-                                                }
+                                            // 标签名称
+                                            div {
+                                                class: format!(
+                                                    "font-semibold transition-colors duration-300 truncate max-w-28 text-right text-muted-foreground {}",
+                                                    if is_active {
+                                                        "text-sm"
+                                                    } else {
+                                                        "text-xs group-hover:opacity-80"
+                                                    }
+                                                ),
+                                                "{ t!(tag.i18n_key()) }"
                                             }
+
+                                            // 文章数量
+                                            div {
+                                                class: format!(
+                                                    "font-medium transition-colors duration-300 {}",
+                                                    if is_active {
+                                                        "text-muted-foreground text-xs"
+                                                    } else {
+                                                        "text-muted-foreground/70 text-xs group-hover:text-muted-foreground"
+                                                    }
+                                                ),
+                                                "{post_count}"
+                                            }
+                                        }
+
+                                        // 右侧色块
+                                        div {
+                                            class: format!(
+                                                "w-1 h-full transition-all duration-300 {}",
+                                                if is_active {
+                                                    "shadow-sm"
+                                                } else {
+                                                    "group-hover:shadow-sm"
+                                                }
+                                            ),
+                                            style: "{color_style}",
                                         }
                                     }
                                 }

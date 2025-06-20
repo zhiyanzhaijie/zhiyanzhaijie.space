@@ -17,19 +17,19 @@ pub enum Route {
         #[route("/about")]
         About {},
 
-        #[route("/tags")]
-        TagList {},
+        #[nest("/tags")]
+          #[route("/")]
+          TagList {},
+          #[route("/:tag")]
+          BlogByTag { tag: String },
+        #[end_nest]
 
         #[nest("/blog")]
             #[layout(BlogLayout)]
                 #[route("/")]
                 BlogList {},
-
                 #[route("/post/:slug")]
                 BlogPost { slug: String },
-
-                #[route("/tag/:tag")]
-                BlogByTag { tag: String },
             #[end_layout]
         #[end_nest]
     #[end_layout]

@@ -2,7 +2,7 @@
 title: 深入探索 Rust 异步编程
 date: 2024-01-20
 slug: tech-deep-dive
-tags: ["技术", "Rust", "异步编程"]
+tags: ["technology", "rust", "async-programming"]
 ---
 
 # 深入探索 Rust 异步编程

@@ -1,6 +1,8 @@
+use crate::components::common::svgs::CopySVG;
 use crate::components::markdown::registry::ComponentRegistry;
 use crate::utils::url::percent_decode;
 use dioxus::prelude::*;
+use js_sys;
 use markdown::mdast;
 use std::collections::HashMap;
 
@@ -150,12 +152,7 @@ pub fn RenderMdastNode(node: mdast::Node, registry: ComponentRegistry) -> Elemen
         },
         mdast::Node::Code(code_block) => {
             let lang = code_block.lang.as_deref().unwrap_or("text");
-            // 实现按static lang
-            let static_lang = match code_block.lang.as_deref() {
-                Some("rust") => "rust",
-                Some("python") => "python",
-                _ => "text",
-            };
+
             // 查找语法定义
             let syntax = SYNTAX_SET
                 .find_syntax_by_token(lang)
@@ -182,10 +179,51 @@ pub fn RenderMdastNode(node: mdast::Node, registry: ComponentRegistry) -> Elemen
             // 渲染高亮代码
             rsx! {
               figure {
-                class: "relative border border-border rounded my-5",
+                class: "group relative border border-border rounded my-5",
                 figcaption {
-                  class: "absolute inline-block text-red-400 -top-3 left-3 bg-background px-2 py-1 text-sm rounded-xl border border-border leading-none",
+                  class: "absolute inline-block border-destructive bg-muted text-destructive -top-3 left-3  px-3 py-1 text-sm rounded-xl border border-border leading-none",
                   "{lang}"
+                }
+                button {
+                  class: "absolute -top-3 right-3 p-2 bg-background border border-border rounded-xl hover:bg-muted hover:text-primary cursor-pointer transition-all duration-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible",
+                  onclick: {
+                    let code_content = code_block.value.clone();
+                    move |_| {
+                      let script = format!(
+                        r#"
+                        if (navigator.clipboard && window.isSecureContext) {{
+                          navigator.clipboard.writeText(`{}`).then(() => {{
+                            console.log('Code copied to clipboard');
+                          }}).catch(err => {{
+                            console.error('Failed to copy:', err);
+                            // Fallback for older browsers
+                            const textArea = document.createElement('textarea');
+                            textArea.value = `{}`;
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(textArea);
+                          }});
+                        }} else {{
+                          // Fallback for older browsers
+                          const textArea = document.createElement('textarea');
+                          textArea.value = `{}`;
+                          document.body.appendChild(textArea);
+                          textArea.select();
+                          document.execCommand('copy');
+                          document.body.removeChild(textArea);
+                        }}
+                        "#,
+                        code_content.replace('`', r"\`").replace('\n', r"\n"),
+                        code_content.replace('`', r"\`").replace('\n', r"\n"),
+                        code_content.replace('`', r"\`").replace('\n', r"\n")
+                      );
+
+                      let _ = js_sys::eval(&script);
+                    }
+                  },
+                  title: "复制代码",
+                  CopySVG {}
                 }
                 pre {
                     code {

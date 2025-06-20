@@ -2,7 +2,7 @@
 title: 我的编程学习之路：从入门到进阶
 date: 2024-01-22
 slug: learning-journey
-tags: ["学习", "编程", "成长"]
+tags: ["learning", "programming", "growth"]
 ---
 
 # 我的编程学习之路：从入门到进阶

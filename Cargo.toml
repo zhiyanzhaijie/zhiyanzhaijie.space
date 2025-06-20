@@ -9,6 +9,10 @@ edition = "2021"
 [dependencies]
 dioxus = { version = "0.6.3", features = ["router"] }
 dioxus-web = { version = "0.6.3", default-features = false }
+dioxus-i18n = "0.4.2"
+unic-langid = "0.9"
+js-sys = "0.3"
+wasm-bindgen = "0.2"
 web-sys = { version = "0.3", features = [
   "Window",
   "Document",
@@ -17,6 +21,8 @@ web-sys = { version = "0.3", features = [
   "MediaQueryList",
   "MediaQueryListEvent",
   "HtmlElement",
+  "Navigator",
+  "Clipboard",
 ] }
 
 # 添加 log crate

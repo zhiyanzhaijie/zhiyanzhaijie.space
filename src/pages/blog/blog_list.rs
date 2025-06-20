@@ -1,6 +1,7 @@
 use crate::models::post::POSTS;
 use crate::routes::Route;
 use dioxus::prelude::*;
+use dioxus_i18n::t;
 
 #[component]
 pub fn BlogList() -> Element {
@@ -10,7 +11,7 @@ pub fn BlogList() -> Element {
             if POSTS.is_empty() {
                 div {
                     class: "text-center py-12 text-muted-foreground",
-                    "暂无文章"
+                    "No articles available"
                 }
             } else {
                 {POSTS.iter().map(|(post_meta, _post_content)| {
@@ -39,9 +40,9 @@ pub fn BlogList() -> Element {
                                 if let Some(tags) = &tags_clone {
                                     if let Some(first_tag) = tags.first() {
                                         Link {
-                                            to: Route::TagList {},
+                                            to: Route::BlogByTag { tag: first_tag.to_string() },
                                             class: "flex-shrink-0 text-xs bg-secondary/60 text-secondary-foreground px-2 py-1 rounded-full hover:bg-secondary transition-colors",
-                                            "{first_tag}"
+                                            { t!(first_tag.i18n_key()) }
                                         }
                                     }
                                 }
@@ -52,7 +53,7 @@ pub fn BlogList() -> Element {
                                 class: "flex items-center space-x-4 text-xs text-muted-foreground flex-shrink-0",
                                 span {
                                     class: "font-mono",
-                                    "{post_meta.word_count} 字"
+                                    { t!("page-blog-post-word-count", count: post_meta.word_count) }
                                 }
                                 span {
                                     class: "font-mono",

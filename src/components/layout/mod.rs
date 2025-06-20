@@ -1,8 +1,11 @@
 use crate::{
-    components::common::{LogoSVG, ThemeSwitcher},
+    components::common::{
+        locale_switcher::LocaleSwitcher, svgs::LogoSVG, theme_switcher::ThemeSwitcher,
+    },
     routes::Route,
 };
 use dioxus::prelude::*;
+use dioxus_i18n::t;
 use dioxus_router::prelude::use_route;
 
 #[component]
@@ -29,24 +32,24 @@ pub fn MainLayout() -> Element {
                         Link {
                             to: Route::BlogList {},
 
-                            LogoSVG {  }
+                            LogoSVG  {  }
                         }
 
                         Link {
                             to: Route::BlogList {},
                             class: format!(
                                 "text-sm font-medium transition-colors duration-200 relative group {}",
-                                if matches!(current_route, Route::BlogList { .. } | Route::BlogPost { .. } | Route::BlogByTag { .. }) {
+                                if matches!(current_route, Route::BlogList { .. } | Route::BlogPost { .. } ) {
                                     "text-foreground"
                                 } else {
                                     "text-muted-foreground hover:text-foreground"
                                 }
                             ),
-                            "文章"
+                            { t!("main-layout-nav-articles") }
                             span {
                                 class: format!(
                                     "absolute -bottom-1 left-0 h-px bg-foreground transition-all duration-200 {}",
-                                    if matches!(current_route, Route::BlogList { .. } | Route::BlogPost { .. } | Route::BlogByTag { .. }) {
+                                    if matches!(current_route, Route::BlogList { .. } | Route::BlogPost { .. }) {
                                         "w-full"
                                     } else {
                                         "w-0 group-hover:w-full"
@@ -59,13 +62,13 @@ pub fn MainLayout() -> Element {
                             to: Route::TagList {},
                             class: format!(
                                 "text-sm font-medium transition-colors duration-200 relative group {}",
-                                if matches!(current_route, Route::TagList { .. }) {
+                                if matches!(current_route, Route::TagList { .. } | Route::BlogByTag { .. }) {
                                     "text-foreground"
                                 } else {
                                     "text-muted-foreground hover:text-foreground"
                                 }
                             ),
-                            "标签"
+                            { t!("main-layout-nav-tags") }
                             span {
                                 class: format!(
                                     "absolute -bottom-1 left-0 h-px bg-foreground transition-all duration-200 {}",
@@ -88,7 +91,7 @@ pub fn MainLayout() -> Element {
                                     "text-muted-foreground hover:text-foreground"
                                 }
                             ),
-                            "关于"
+                            { t!("main-layout-nav-about") }
                             span {
                                 class: format!(
                                     "absolute -bottom-1 left-0 h-px bg-foreground transition-all duration-200 {}",
@@ -105,6 +108,7 @@ pub fn MainLayout() -> Element {
                     div {
                       class: "flex justify-end",
                         ThemeSwitcher {}
+                        LocaleSwitcher {}
                     }
                 }
             }
