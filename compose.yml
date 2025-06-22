@@ -4,9 +4,5 @@ services:
       context: .
     image: zyzj_blog:latest
     ports:
-      - "4200:8080"
+      - "4200:80"
     restart: unless-stopped
-    # volumes:
-    # - ./app:/usr/src/app
-    # environment:
-    # - NODE_ENV=development

@@ -29,9 +29,25 @@ RUN dx bundle --platform web
 FROM nginx:alpine AS runtime
 COPY --from=builder /app/target/dx/zhiyanzhaijie-space/release/web/public /usr/share/nginx/html/
 
-ENV PORT=8080
-ENV IP=0.0.0.0
+# 添加 SPA 路由配置
+RUN echo 'server { \
+  listen 80; \
+  server_name localhost; \
+  root /usr/share/nginx/html; \
+  index index.html; \
+  \
+  # SPA 路由配置 - 关键部分 \
+  location / { \
+  try_files $uri $uri/ /index.html; \
+  } \
+  \
+  location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ { \
+  expires 1y; \
+  add_header Cache-Control "public, immutable"; \
+  try_files $uri =404; \
+  } \
+  }' > /etc/nginx/conf.d/default.conf
 
-EXPOSE 8080
-
+ENV PORT=80
+EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
