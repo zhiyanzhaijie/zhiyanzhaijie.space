@@ -33,6 +33,11 @@ pub struct PostMetadata {
 
 pub static POSTS: Lazy<Vec<(PostMetadata, String)>> = Lazy::new(load_markdown_posts);
 
+// 提供统一的访问接口
+pub fn get_all_posts() -> Vec<(PostMetadata, String)> {
+    POSTS.clone()
+}
+
 fn calculate_word_count(content: &str) -> usize {
     content.split_whitespace().count()
 }
@@ -140,4 +145,42 @@ pub fn get_post_by_slug(slug: &str) -> Option<(Arc<PostMetadata>, String)> {
             None
         }
     })
+}
+
+// 解析单个markdown文件内容 - 保留以备将来使用
+#[allow(dead_code)]
+fn parse_markdown_content(content: &str) -> Option<(PostMetadata, String)> {
+    let parts: Vec<&str> = content.splitn(3, "---").collect();
+    if parts.len() == 3 {
+        let frontmatter_str = parts[1];
+        let md_content = parts[2].trim_start();
+
+        if let Ok(raw_meta) = serde_yaml::from_str::<RawPostMetadata>(frontmatter_str) {
+            let word_count = calculate_word_count(md_content);
+
+            // Convert string tags to Tag enum
+            let tags = raw_meta
+                .tags
+                .map(|tag_strings| {
+                    tag_strings
+                        .iter()
+                        .filter_map(|tag_str| match tag_str.parse::<Tag>() {
+                            Ok(tag) => Some(tag),
+                            Err(_) => None, // 忽略未知标签
+                        })
+                        .collect::<Vec<Tag>>()
+                })
+                .filter(|tags| !tags.is_empty()); // Remove empty tag lists
+
+            let metadata = PostMetadata {
+                title: raw_meta.title,
+                date: raw_meta.date,
+                slug: raw_meta.slug,
+                tags,
+                word_count,
+            };
+            return Some((metadata, md_content.to_string()));
+        }
+    }
+    None
 }

@@ -6,7 +6,7 @@ use dioxus::prelude::*;
 use dioxus_i18n::t;
 
 #[component]
-pub fn ThemeSwitcher() -> Element {
+pub fn ThemeSwitcher(#[props(default = false)] is_mobile: bool) -> Element {
     let mut rotation_count = use_signal(|| 0);
 
     let handle_theme_toggle = move |_| {
@@ -45,35 +45,53 @@ pub fn ThemeSwitcher() -> Element {
         AppTheme::Dark => t!("theme-switcher-dark"),
     };
 
-    let rotation_degrees = - rotation_count() * 180;
+    let rotation_degrees = -rotation_count() * 180;
 
-    rsx! {
-        div {
-            class: "relative w-12 h-12 p-2 mr-4",
+    if is_mobile {
+        rsx! {
+            div {
+                class: "p-2",
+                button {
+                    class: "p-1 rounded focus:outline-none cursor-pointer",
+                    title: "{title_text}",
+                    onclick: handle_theme_toggle,
 
-            button {
-                class: "w-full h-full bg-transparent border-none rounded-md cursor-pointer focus:outline-none",
-                title: "{title_text}",
+                    match current_theme {
+                        AppTheme::Light => rsx! { MoonSVG {} },
+                        AppTheme::Dark => rsx! { SunSVG {} },
+                    }
+                }
+            }
+        }
+    } else {
+        rsx! {
+            div {
+                class: "relative w-12 h-12 p-2 mr-4",
 
-                div {
-                    class: "flex w-18 h-6 overflow-hidden justify-center relative",
+                button {
+                    class: "w-full h-full bg-transparent border-none rounded-md cursor-pointer focus:outline-none",
+                    title: "{title_text}",
 
                     div {
-                        class: "w-6 h-16 flex flex-col transition-transform duration-800 ease-in-ou",
-                        style: "transform: rotate({rotation_degrees}deg);",
-                        onclick: handle_theme_toggle,
+                        class: "flex w-18 h-6 overflow-hidden justify-center relative",
 
                         div {
-                            class: "w-6 h-6 flex-shrink-0 flex -rotate-90 items-center justify-center drop-shadow-lg",
-                            MoonSVG {}
-                        }
-                        div {
-                          class: "w-4 h-4 flex-shrink-0"
-                        }
+                            class: "w-6 h-16 flex flex-col transition-transform duration-800 ease-in-ou",
+                            style: "transform: rotate({rotation_degrees}deg);",
+                            onclick: handle_theme_toggle,
 
-                        div {
-                            class: "w-6 h-6 flex-shrink-0 flex items-center justify-center drop-shadow-lg",
-                            SunSVG {}
+                            div {
+                                class: "w-6 h-6 flex-shrink-0 flex -rotate-90 items-center justify-center drop-shadow-lg",
+                                MoonSVG {}
+                            }
+                            div {
+                              class: "w-4 h-4 flex-shrink-0"
+                            }
+
+                            div {
+                                class: "w-6 h-6 flex-shrink-0 flex items-center justify-center drop-shadow-lg",
+                                SunSVG {}
+                            }
                         }
                     }
                 }

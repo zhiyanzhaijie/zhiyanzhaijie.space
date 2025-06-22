@@ -161,11 +161,17 @@ fn App() -> Element {
     });
 
     const TW_STYLES: Asset = asset!("/assets/tailwind.css");
+    const NOISE_IMAGE: Asset = asset!("/assets/noise.png");
 
     rsx! {
         title { { t!("common-site-title") } }
         Stylesheet {
           href: TW_STYLES
+        }
+        // Noise background layer
+        div {
+            class: "pointer-events-none fixed inset-0 bg-repeat opacity-[0.035] dark:opacity-[0.020]",
+            style: "background-image: url({NOISE_IMAGE}); background-size: 180px;",
         }
         // Animated ASCII Art Bird Logo Silhouette Background
         AnimatedBird {}

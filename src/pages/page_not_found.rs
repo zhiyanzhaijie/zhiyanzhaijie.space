@@ -7,16 +7,16 @@ use dioxus_i18n::t;
 pub fn PageNotFound(route: Vec<String>) -> Element {
     rsx! {
         div {
-            class: "min-h-screen flex items-center justify-center bg-background",
+            class: "min-h-screen flex items-center justify-center bg-background px-4",
 
             div {
-                class: "container mx-auto px-4 py-8 text-center",
+                class: "container mx-auto py-8 text-center max-w-4xl",
 
                 // 404 图标
                 div {
-                    class: "mb-8",
+                    class: "mb-6 sm:mb-8",
                     svg {
-                        class: "w-32 h-32 mx-auto text-muted-foreground/40",
+                        class: "w-24 h-24 sm:w-32 sm:h-32 mx-auto text-muted-foreground/40",
                         view_box: "0 0 24 24",
                         fill: "none",
                         stroke: "currentColor",
@@ -30,30 +30,30 @@ pub fn PageNotFound(route: Vec<String>) -> Element {
 
                 // 错误信息
                 div {
-                    class: "max-w-2xl mx-auto mb-8",
+                    class: "max-w-2xl mx-auto mb-6 sm:mb-8",
                     h1 {
-                        class: "text-6xl font-bold text-primary mb-4",
+                        class: "text-4xl sm:text-5xl lg:text-6xl font-bold text-primary mb-3 sm:mb-4",
                         "404"
                     }
                     h2 {
-                        class: "text-3xl font-bold text-foreground mb-4",
+                        class: "text-xl sm:text-2xl lg:text-3xl font-bold text-foreground mb-3 sm:mb-4 leading-tight",
                         { t!("page-not-found-title") }
                     }
                     p {
-                        class: "text-lg text-muted-foreground leading-relaxed mb-6",
+                        class: "text-sm sm:text-base lg:text-lg text-muted-foreground leading-relaxed mb-6",
                         { t!("page-not-found-message") }
                     }
 
                     // 显示尝试访问的路径
                     if !route.is_empty() {
                         div {
-                            class: "bg-card/60 border border-border rounded-lg p-4 mb-6",
+                            class: "bg-card/60 border border-border rounded-lg p-3 sm:p-4 mb-6 text-left",
                             p {
-                                class: "text-sm text-muted-foreground mb-2",
+                                class: "text-xs sm:text-sm text-muted-foreground mb-2",
                                 "Attempted path:"
                             }
                             code {
-                                class: "text-primary font-mono bg-primary/10 px-2 py-1 rounded",
+                                class: "text-primary font-mono bg-primary/10 px-2 py-1 rounded text-xs sm:text-sm break-all",
                                 "/{route.join(\"/\")}"
                             }
                         }
@@ -62,11 +62,11 @@ pub fn PageNotFound(route: Vec<String>) -> Element {
 
                 // 操作按钮
                 div {
-                    class: "flex flex-col sm:flex-row items-center justify-center gap-4",
+                    class: "flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4",
 
                     Link {
                         to: Route::BlogList {},
-                        class: "inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium",
+                        class: "inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium min-h-[48px] w-full sm:w-auto justify-center",
                         svg {
                             class: "w-5 h-5 mr-2",
                             view_box: "0 0 24 24",
@@ -81,7 +81,7 @@ pub fn PageNotFound(route: Vec<String>) -> Element {
 
                     Link {
                         to: Route::BlogList {},
-                        class: "inline-flex items-center px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors duration-200 font-medium",
+                        class: "inline-flex items-center px-6 py-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors duration-200 font-medium min-h-[48px] w-full sm:w-auto justify-center",
                         svg {
                             class: "w-5 h-5 mr-2",
                             view_box: "0 0 24 24",
@@ -100,34 +100,34 @@ pub fn PageNotFound(route: Vec<String>) -> Element {
 
                 // 建议链接
                 div {
-                    class: "mt-12 pt-8 border-t border-border/50",
+                    class: "mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-border/50",
                     h3 {
-                        class: "text-lg font-semibold text-foreground mb-4",
+                        class: "text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4",
                         "Suggested pages"
                     }
                     div {
-                        class: "flex flex-wrap justify-center gap-4",
+                        class: "flex flex-wrap justify-center gap-2 sm:gap-4 text-center",
                         Link {
                             to: Route::About {},
-                            class: "text-primary hover:text-primary/80 transition-colors duration-200 text-sm font-medium",
+                            class: "text-primary hover:text-primary/80 transition-colors duration-200 text-sm font-medium min-h-[44px] flex items-center justify-center px-2",
                             { t!("page-about-title") }
                         }
                         span {
-                            class: "text-muted-foreground",
+                            class: "text-muted-foreground hidden sm:inline",
                             "•"
                         }
                         Link {
                             to: Route::BlogByTag { tag: Tag::Technology.to_string() },
-                            class: "text-primary hover:text-primary/80 transition-colors duration-200 text-sm font-medium",
+                            class: "text-primary hover:text-primary/80 transition-colors duration-200 text-sm font-medium min-h-[44px] flex items-center justify-center px-2",
                             { t!(Tag::Technology.i18n_key()) }
                         }
                         span {
-                            class: "text-muted-foreground",
+                            class: "text-muted-foreground hidden sm:inline",
                             "•"
                         }
                         Link {
                             to: Route::BlogByTag { tag: Tag::Life.to_string() },
-                            class: "text-primary hover:text-primary/80 transition-colors duration-200 text-sm font-medium",
+                            class: "text-primary hover:text-primary/80 transition-colors duration-200 text-sm font-medium min-h-[44px] flex items-center justify-center px-2",
                             { t!(Tag::Life.i18n_key()) }
                         }
                     }

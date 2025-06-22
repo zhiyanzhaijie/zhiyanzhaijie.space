@@ -12,39 +12,57 @@ pub fn BlogPost(slug: String) -> Element {
     match post() {
         Some((meta, content)) => {
             rsx! {
-                div { class: "w-full h-full px-4 py-4 overflow-hidden overflow-y-auto",
+                div { class: "w-full min-h-screen px-2 sm:px-4 py-4 overflow-hidden overflow-y-auto",
 
-                    article { class: "container mx-auto",
-                        h1 { class: "text-3xl font-bold text-foreground mb-2", {meta.title.clone()} }
-                        p { class: "text-sm text-muted-foreground mb-2",
-                            { t!("page-blog-post-published") } " {meta.date.clone()}"
-                        }
+                    article { class: "container mx-auto max-w-4xl",
+                        // Article header
+                        header { class: "mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-border/30",
+                            h1 { class: "text-xl sm:text-2xl lg:text-3xl font-bold text-foreground mb-3 sm:mb-4 leading-tight", {meta.title.clone()} }
 
-                        // Tags display
-                        if let Some(ref tags) = meta.tags {
-                            div {
-                                class: "mb-8",
-                                for (i, tag) in tags.iter().enumerate() {
-                                    if i > 0 {
-                                        span { class: "text-muted-foreground", " " }
-                                    }
-                                    Link {
-                                        to: Route::BlogByTag { tag: tag.to_string() },
-                                        class: "text-muted-foreground hover:text-muted-foreground/80 hover:underline transition-colors",
-                                        "#{ t!(tag.i18n_key()) }"
+                            div { class: "flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground",
+                                p { class: "flex items-center",
+                                    { t!("page-blog-post-published") } " {meta.date.clone()}"
+                                }
+
+                                // Word count for larger screens
+                                span { class: "hidden sm:inline-block text-xs",
+                                    "•"
+                                }
+                                span { class: "hidden sm:inline-block text-xs",
+                                    { t!("page-blog-post-word-count", count: meta.word_count) }
+                                }
+                            }
+
+                            // Tags display
+                            if let Some(ref tags) = meta.tags {
+                                div {
+                                    class: "flex flex-wrap gap-2 mt-3 sm:mt-4",
+                                    for tag in tags.iter() {
+                                        Link {
+                                            to: Route::BlogByTag { tag: tag.to_string() },
+                                            class: "inline-flex items-center px-2 py-1 text-xs bg-secondary/60 text-secondary-foreground rounded-full hover:bg-secondary transition-colors",
+                                            "#{ t!(tag.i18n_key()) }"
+                                        }
                                     }
                                 }
                             }
                         }
 
-                        MarkdownRenderer { content: content.clone() }
+                        // Article content
+                        div { class: "prose prose-sm sm:prose-base lg:prose-lg max-w-none prose-slate dark:prose-invert",
+                            MarkdownRenderer { content: content.clone() }
+                        }
                     }
 
-                    nav { class: "mt-6 py-4",
-                        Link {
-                            class: "text-primary hover:text-primary/80 flex items-center",
-                              to: Route::BlogList { },
-                            { t!("common-button-back") }
+                    // Navigation
+                    nav { class: "mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-border/30",
+                        div { class: "container mx-auto max-w-4xl",
+                            Link {
+                                class: "inline-flex items-center gap-2 text-sm sm:text-base text-primary hover:text-primary/80 transition-colors",
+                                to: Route::BlogList { },
+                                span { class: "text-lg", "←" }
+                                { t!("common-button-back") }
+                            }
                         }
                     }
                 }
@@ -52,11 +70,11 @@ pub fn BlogPost(slug: String) -> Element {
         }
         None => {
             rsx! {
-                div { class: "container mx-auto px-4 py-16 text-center",
-                    h1 { class: "text-3xl font-bold text-foreground mb-4", { t!("page-not-found-title") } }
-                    p { class: "text-muted-foreground mb-6", { t!("page-not-found-message") } }
+                div { class: "container mx-auto px-4 py-8 sm:py-16 text-center",
+                    h1 { class: "text-xl sm:text-2xl lg:text-3xl font-bold text-foreground mb-4 leading-tight", { t!("page-not-found-title") } }
+                    p { class: "text-sm sm:text-base text-muted-foreground mb-6 max-w-md mx-auto", { t!("page-not-found-message") } }
                     Link {
-                        class: "btn text-primary-foreground bg-primary px-4 py-2 rounded-md inline-block",
+                        class: "inline-flex items-center justify-center px-4 py-2 text-sm sm:text-base font-medium text-primary-foreground bg-primary rounded-md hover:bg-primary/90 transition-colors min-h-[44px]",
                         to: Route::BlogList { },
                         { t!("page-not-found-back-home") }
                     }

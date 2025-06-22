@@ -32,8 +32,8 @@ impl Default for AnimationConfig {
     fn default() -> Self {
         Self {
             // 网格配置
-            grid_rows: 5,
-            grid_cols: 5,
+            grid_rows: 12,
+            grid_cols: 12,
 
             // 时间配置
             initial_delay_ms: 500,
@@ -216,6 +216,77 @@ impl PathCalculator {
     }
 }
 
+// Helper function to generate grid CSS classes
+fn get_grid_classes(rows: usize, cols: usize) -> String {
+    match (rows, cols) {
+        (1, 1) => "grid-cols-1 grid-rows-1",
+        (2, 2) => "grid-cols-2 grid-rows-2",
+        (3, 3) => "grid-cols-3 grid-rows-3",
+        (4, 4) => "grid-cols-4 grid-rows-4",
+        (5, 5) => "grid-cols-5 grid-rows-5",
+        (6, 6) => "grid-cols-6 grid-rows-6",
+        (7, 7) => "grid-cols-7 grid-rows-7",
+        (8, 8) => "grid-cols-8 grid-rows-8",
+        (9, 9) => "grid-cols-9 grid-rows-9",
+        (10, 10) => "grid-cols-10 grid-rows-10",
+        (11, 11) => "grid-cols-11 grid-rows-11",
+        (12, 12) => "grid-cols-12 grid-rows-12",
+        (12, cols) => match cols {
+            1 => "grid-cols-1 grid-rows-12",
+            2 => "grid-cols-2 grid-rows-12",
+            3 => "grid-cols-3 grid-rows-12",
+            4 => "grid-cols-4 grid-rows-12",
+            5 => "grid-cols-5 grid-rows-12",
+            6 => "grid-cols-6 grid-rows-12",
+            7 => "grid-cols-7 grid-rows-12",
+            8 => "grid-cols-8 grid-rows-12",
+            9 => "grid-cols-9 grid-rows-12",
+            10 => "grid-cols-10 grid-rows-12",
+            11 => "grid-cols-11 grid-rows-12",
+            _ => "grid-cols-12 grid-rows-12",
+        },
+        _ => "grid-cols-12 grid-rows-12", // Default fallback
+    }
+    .to_string()
+}
+
+// Helper function to get grid position CSS classes
+fn get_grid_position_classes(row: usize, col: usize) -> String {
+    let row_class = match row + 1 {
+        1 => "row-start-1",
+        2 => "row-start-2",
+        3 => "row-start-3",
+        4 => "row-start-4",
+        5 => "row-start-5",
+        6 => "row-start-6",
+        7 => "row-start-7",
+        8 => "row-start-8",
+        9 => "row-start-9",
+        10 => "row-start-10",
+        11 => "row-start-11",
+        12 => "row-start-12",
+        _ => "row-start-1",
+    };
+
+    let col_class = match col + 1 {
+        1 => "col-start-1",
+        2 => "col-start-2",
+        3 => "col-start-3",
+        4 => "col-start-4",
+        5 => "col-start-5",
+        6 => "col-start-6",
+        7 => "col-start-7",
+        8 => "col-start-8",
+        9 => "col-start-9",
+        10 => "col-start-10",
+        11 => "col-start-11",
+        12 => "col-start-12",
+        _ => "col-start-1",
+    };
+
+    format!("{} {}", row_class, col_class)
+}
+
 #[component]
 pub fn AnimatedBird() -> Element {
     let config = AnimationConfig::default();
@@ -283,8 +354,8 @@ pub fn AnimatedBird() -> Element {
 
                     let block_content = content_lines.join("\n");
 
-                    // 只有包含非空字符的块才添加
-                    if block_content.trim().len() > 0 {
+                    // 只过滤完全空的块，保留包含空格的块（ASCII艺术中空格也是重要的）
+                    if !block_content.chars().all(|c| c == ' ' || c == '\n') {
                         // 计算优先级层级（到中心的距离）
                         let priority_layer =
                             path_calculator.manhattan_distance_to_center(grid_y, grid_x);
@@ -418,12 +489,12 @@ pub fn AnimatedBird() -> Element {
                 class: "absolute {config_for_render.scale_class} {config_for_render.position_classes}",
 
                 div {
-                    class: "grid grid-cols-{config_for_render.grid_cols} grid-rows-{config_for_render.grid_rows} {config_for_render.text_classes}",
+                    class: "grid {get_grid_classes(config_for_render.grid_rows, config_for_render.grid_cols)} {config_for_render.text_classes}",
 
                     for block in blocks.iter() {
                         div {
                             key: "{block.block_id}",
-                            class: "whitespace-pre select-none will-change-transform",
+                            class: "whitespace-pre select-none will-change-transform {get_grid_position_classes(block.grid_row, block.grid_col)}",
                             style: {
                                 let opacity_state = opacity_map.get(&block.block_id).unwrap_or(&OpacityState::Moving);
 
