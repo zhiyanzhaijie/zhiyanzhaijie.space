@@ -7,7 +7,7 @@ tags: ["dioxus"]
 
 Hey there.
 
-## How this site work这个网站1231231r123123123
+## How this site work2
 
 Thanks to framework and works followed:
 1. Dioxus (a cross-plateform ui framework writed in Rust)

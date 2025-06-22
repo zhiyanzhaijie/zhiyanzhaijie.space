@@ -29,9 +29,9 @@ RUN dx bundle --platform web
 FROM nginx:alpine AS runtime
 COPY --from=builder /app/target/dx/zhiyanzhaijie-space/release/web/public /usr/share/nginx/html/
 
-ENV PORT=80
+ENV PORT=8080
 ENV IP=0.0.0.0
 
-EXPOSE 80
+EXPOSE 8080
 
 CMD ["nginx", "-g", "daemon off;"]
