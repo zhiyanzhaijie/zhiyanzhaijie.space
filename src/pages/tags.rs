@@ -136,7 +136,7 @@ pub fn TagList() -> Element {
                     // 添加导航标题
                     div {
                         class: "mb-4 text-xs font-medium text-muted-foreground uppercase tracking-wide text-right",
-                        "Quick Navigation"
+                        { t!("page-tag-list-navigation") }
                     }
 
                     div {

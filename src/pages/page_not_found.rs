@@ -98,40 +98,8 @@ pub fn PageNotFound(route: Vec<String>) -> Element {
                     }
                 }
 
-                // 建议链接
-                div {
-                    class: "mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-border/50",
-                    h3 {
-                        class: "text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4",
-                        "Suggested pages"
-                    }
-                    div {
-                        class: "flex flex-wrap justify-center gap-2 sm:gap-4 text-center",
-                        Link {
-                            to: Route::About {},
-                            class: "text-primary hover:text-primary/80 transition-colors duration-200 text-sm font-medium min-h-[44px] flex items-center justify-center px-2",
-                            { t!("page-about-title") }
-                        }
-                        span {
-                            class: "text-muted-foreground hidden sm:inline",
-                            "•"
-                        }
-                        Link {
-                            to: Route::BlogByTag { tag: Tag::Technology.to_string() },
-                            class: "text-primary hover:text-primary/80 transition-colors duration-200 text-sm font-medium min-h-[44px] flex items-center justify-center px-2",
-                            { t!(Tag::Technology.i18n_key()) }
-                        }
-                        span {
-                            class: "text-muted-foreground hidden sm:inline",
-                            "•"
-                        }
-                        Link {
-                            to: Route::BlogByTag { tag: Tag::Life.to_string() },
-                            class: "text-primary hover:text-primary/80 transition-colors duration-200 text-sm font-medium min-h-[44px] flex items-center justify-center px-2",
-                            { t!(Tag::Life.i18n_key()) }
-                        }
-                    }
-                }
+
+
             }
         }
     }

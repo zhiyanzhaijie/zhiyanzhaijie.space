@@ -56,11 +56,10 @@ pub fn BlogPost(slug: String) -> Element {
 
                     // Navigation
                     nav { class: "mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-border/30",
-                        div { class: "container mx-auto max-w-4xl",
+                        div { class: "container mx-auto max-w-4xl hover:underline",
                             Link {
                                 class: "inline-flex items-center gap-2 text-sm sm:text-base text-primary hover:text-primary/80 transition-colors",
                                 to: Route::BlogList { },
-                                span { class: "text-lg", "←" }
                                 { t!("common-button-back") }
                             }
                         }

@@ -48,11 +48,11 @@ pub fn About() -> Element {
                     class: "space-y-3 sm:space-y-4",
                     div {
                         class: "text-sm sm:text-base text-muted-foreground",
-                        "Email: hello@example.com"
+                        "Email: ..."
                     }
                     div {
                         a {
-                            href: "https://github.com",
+                            href: "https://github.com/zhiyanzhaijie",
                             target: "_blank",
                             rel: "noopener noreferrer",
                             class: "inline-flex items-center gap-2 text-sm sm:text-base text-foreground hover:text-primary transition-colors underline-offset-4 hover:underline min-h-[44px] sm:min-h-auto",

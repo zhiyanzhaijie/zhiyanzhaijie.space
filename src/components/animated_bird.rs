@@ -1,7 +1,27 @@
 use dioxus::prelude::*;
+use log::info;
 use rand::prelude::SliceRandom;
 use rand::Rng;
 use std::collections::{HashMap, HashSet};
+
+fn is_mobile() -> bool {
+    if let Some(window) = web_sys::window() {
+        if let Ok(Some(media_query)) = window.match_media("(max-width: 768px)") {
+            let is_mobile = media_query.matches();
+            info!(
+                "检测到设备类型: {}",
+                if is_mobile { "移动端" } else { "桌面端" }
+            );
+            is_mobile
+        } else {
+            info!("媒体查询失败，默认为桌面端");
+            false
+        }
+    } else {
+        info!("无法获取窗口对象，默认为桌面端");
+        false
+    }
+}
 
 // 动画配置结构
 #[derive(Clone)]
@@ -28,8 +48,8 @@ struct AnimationConfig {
     text_classes: &'static str,
 }
 
-impl Default for AnimationConfig {
-    fn default() -> Self {
+impl AnimationConfig {
+    fn desktop() -> Self {
         Self {
             // 网格配置
             grid_rows: 12,
@@ -51,6 +71,43 @@ impl Default for AnimationConfig {
             scale_class: "scale-[70%]",
             position_classes: "-bottom-[30%] right-[5%]",
             text_classes: "font-mono text-xs text-muted-foreground",
+        }
+    }
+
+    fn mobile() -> Self {
+        Self {
+            // 网格配置
+            grid_rows: 12,
+            grid_cols: 12,
+
+            // 时间配置
+            initial_delay_ms: 500,
+            layer_interval_seconds: 4.0,
+            block_interval_seconds: 2.0,
+            movement_duration_seconds: 6.0,
+            opacity_transition_seconds: 3,
+
+            // 透明度配置 - 移动端配置
+            opacity_moving: 0.2,
+            opacity_arrived: 0.5,
+            opacity_settled: 0.25,
+
+            // 视觉配置 - 移动端配置
+            scale_class: "scale-[55%] w-[130%]",
+            position_classes: "-right-[18%] -bottom-[45%]",
+            text_classes: "font-mono text-xs text-muted-foreground",
+        }
+    }
+}
+
+impl Default for AnimationConfig {
+    fn default() -> Self {
+        if is_mobile() {
+            info!("初始化移动端配置");
+            Self::mobile()
+        } else {
+            info!("初始化桌面端配置");
+            Self::desktop()
         }
     }
 }
@@ -289,15 +346,27 @@ fn get_grid_position_classes(row: usize, col: usize) -> String {
 
 #[component]
 pub fn AnimatedBird() -> Element {
-    let config = AnimationConfig::default();
+    let mut config = use_signal(|| AnimationConfig::default());
     let mut animation_state = use_signal(|| AnimationState::Initial);
     let mut square_blocks = use_signal(|| Vec::<SquareBlock>::new());
     let opacity_states = use_signal(|| HashMap::<usize, OpacityState>::new());
     let bird_text = include_str!("../bird.txt");
 
+    // 监听窗口大小变化，更新配置
+    use_effect(move || {
+        let new_config = if is_mobile() {
+            info!("响应式更新: 切换到移动端配置");
+            AnimationConfig::mobile()
+        } else {
+            info!("响应式更新: 切换到桌面端配置");
+            AnimationConfig::desktop()
+        };
+        config.set(new_config);
+    });
+
     // 初始化正方形块
     use_effect({
-        let config = config.clone();
+        let config = config();
         move || {
             let lines: Vec<&str> = bird_text.lines().collect();
             let mut rng = rand::thread_rng();
@@ -435,14 +504,14 @@ pub fn AnimatedBird() -> Element {
 
             spawn(async move {
                 // 使用配置的初始延迟
-                gloo_timers::future::TimeoutFuture::new(config.initial_delay_ms).await;
+                gloo_timers::future::TimeoutFuture::new(config().initial_delay_ms).await;
                 animation_state.set(AnimationState::Animating);
 
                 // 为每个块安排透明度状态变化
                 for block in &blocks {
                     let block_id = block.block_id;
                     let arrival_time =
-                        ((block.delay + config.movement_duration_seconds) * 1000.0) as u32;
+                        ((block.delay + config().movement_duration_seconds) * 1000.0) as u32;
                     let mut opacity_signal_clone = opacity_signal.clone();
 
                     spawn(async move {
@@ -464,7 +533,7 @@ pub fn AnimatedBird() -> Element {
                 // 计算总动画时长
                 let max_delay = blocks
                     .iter()
-                    .map(|b| b.delay + config.movement_duration_seconds)
+                    .map(|b| b.delay + config().movement_duration_seconds)
                     .fold(0.0, f32::max);
                 let total_time = (max_delay * 1000.0) as u32;
 
@@ -479,7 +548,7 @@ pub fn AnimatedBird() -> Element {
     let opacity_map = opacity_states.read();
 
     // 克隆配置以避免借用问题
-    let config_for_render = config.clone();
+    let config_for_render = config();
 
     rsx! {
         div {
