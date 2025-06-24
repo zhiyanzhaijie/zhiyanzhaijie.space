@@ -5,7 +5,7 @@ use dioxus_i18n::t;
 pub fn About() -> Element {
     rsx! {
         div {
-            class: "max-w-4xl mx-auto space-y-6 sm:space-y-8",
+            class: "max-w-4xl lg:ml-8 sm:ml-2 space-y-6 sm:space-y-8",
 
             // 标题
             div {

@@ -33,8 +33,8 @@ pub fn MainLayout() -> Element {
                         class: "flex items-center justify-start space-x-2 sm:space-x-4 flex-wrap gap-y-2",
 
                         Link {
+                            class: "mr-4",
                             to: Route::BlogList {},
-
                             LogoSVG  {  }
                         }
 

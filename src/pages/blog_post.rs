@@ -14,7 +14,7 @@ pub fn BlogPost(slug: String) -> Element {
             rsx! {
                 div { class: "w-full min-h-screen px-2 sm:px-4 py-4 overflow-hidden overflow-y-auto",
 
-                    article { class: "container mx-auto max-w-4xl",
+                    article { class: "container lg:ml-8 sm:ml-2 max-w-6xl",
                         // Article header
                         header { class: "mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-border/30",
                             h1 { class: "text-xl sm:text-2xl lg:text-3xl font-bold text-foreground mb-3 sm:mb-4 leading-tight", {meta.title.clone()} }
@@ -56,7 +56,7 @@ pub fn BlogPost(slug: String) -> Element {
 
                     // Navigation
                     nav { class: "mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-border/30",
-                        div { class: "container mx-auto max-w-4xl hover:underline",
+                        div { class: "container max-w-4xl hover:underline",
                             Link {
                                 class: "inline-flex items-center gap-2 text-sm sm:text-base text-primary hover:text-primary/80 transition-colors",
                                 to: Route::BlogList { },
@@ -69,7 +69,7 @@ pub fn BlogPost(slug: String) -> Element {
         }
         None => {
             rsx! {
-                div { class: "container mx-auto px-4 py-8 sm:py-16 text-center",
+                div { class: "container  px-4 py-8 sm:py-16 text-center",
                     h1 { class: "text-xl sm:text-2xl lg:text-3xl font-bold text-foreground mb-4 leading-tight", { t!("page-not-found-title") } }
                     p { class: "text-sm sm:text-base text-muted-foreground mb-6 max-w-md mx-auto", { t!("page-not-found-message") } }
                     Link {
