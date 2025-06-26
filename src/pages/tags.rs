@@ -1,24 +1,34 @@
 use crate::models::post::get_all_posts;
 use crate::models::tag::Tag;
 use crate::routes::Route;
+use crate::ACTIVE_LOCALE;
 use dioxus::prelude::*;
 use dioxus_i18n::t;
 use std::collections::HashMap;
 
 #[component]
 pub fn TagList() -> Element {
-    // 收集所有标签和对应的文章
-    let tag_posts = use_memo(|| {
+    let current_locale = *ACTIVE_LOCALE.read();
+    let current_lang = current_locale.as_str();
+
+    // 收集所有标签和对应的文章 - 只包含当前语言的文章
+    let tag_posts = use_memo(move || {
+        let current_locale = *ACTIVE_LOCALE.read();
+        let current_lang = current_locale.as_str();
+
         let posts = get_all_posts();
         let mut posts_map: HashMap<Tag, Vec<crate::models::post::PostMetadata>> = HashMap::new();
 
         for (post_meta, _) in posts.iter() {
-            if let Some(tags) = &post_meta.tags {
-                for tag in tags {
-                    posts_map
-                        .entry(tag.clone())
-                        .or_insert_with(Vec::new)
-                        .push(post_meta.clone());
+            // 只处理当前语言的文章
+            if post_meta.lang == current_lang {
+                if let Some(tags) = &post_meta.tags {
+                    for tag in tags {
+                        posts_map
+                            .entry(tag.clone())
+                            .or_insert_with(Vec::new)
+                            .push(post_meta.clone());
+                    }
                 }
             }
         }
@@ -55,7 +65,7 @@ pub fn TagList() -> Element {
                         class: "text-sm sm:text-base text-muted-foreground leading-relaxed",
                         { t!("page-tag-list-stats",
                              tagCount: sorted_tags.read().len(),
-                             postCount: get_all_posts().len()) }
+                             postCount: get_all_posts().iter().filter(|(meta, _)| meta.lang == current_lang).count()) }
                     }
                 }
 

@@ -32,6 +32,7 @@ page-blog-by-tag-description = Related to {$tagName}
 page-blog-post-published = Published on
 page-blog-post-word-count = {$count} words
 page-blog-post-reading-time = {$minutes} min read
+page-blog-post-available-languages = Available in:
 
 page-not-found-title = Page Not Found
 page-not-found-description = The page you're looking for doesn't exist

@@ -1,21 +1,47 @@
 use crate::models::post::get_all_posts;
 use crate::routes::Route;
+use crate::ACTIVE_LOCALE;
 use dioxus::prelude::*;
 use dioxus_i18n::t;
 
 #[component]
 pub fn BlogList() -> Element {
-    let posts = get_all_posts();
+    // Filter posts to only show current language
+    let posts = use_memo(move || {
+        let current_locale = *ACTIVE_LOCALE.read();
+        let current_lang = current_locale.as_str();
+
+        let all_posts = get_all_posts();
+
+        // Only include posts that match the current language
+        let mut filtered_posts: Vec<_> = all_posts
+            .into_iter()
+            .filter(|(meta, _)| meta.lang == current_lang)
+            .collect();
+
+        // Sort by date (newest first)
+        filtered_posts.sort_by(|a, b| {
+            use chrono::NaiveDate;
+            let date_a = NaiveDate::parse_from_str(&a.0.date, "%Y-%m-%d")
+                .unwrap_or_else(|_| NaiveDate::from_ymd_opt(1970, 1, 1).unwrap());
+            let date_b = NaiveDate::parse_from_str(&b.0.date, "%Y-%m-%d")
+                .unwrap_or_else(|_| NaiveDate::from_ymd_opt(1970, 1, 1).unwrap());
+            date_b.cmp(&date_a)
+        });
+
+        filtered_posts
+    });
+
     rsx! {
         div {
             class: "space-y-1 w-full max-w-4xl",
-            if posts.is_empty() {
+            if posts().is_empty() {
                 div {
                     class: "text-center py-12 text-muted-foreground",
                     "No articles available"
                 }
             } else {
-                {posts.iter().map(|(post_meta, _post_content)| {
+                {posts().iter().map(|(post_meta, _post_content)| {
                     let slug_clone = post_meta.slug.clone();
                     let title_clone = post_meta.title.clone();
                     let date_clone = post_meta.date.clone();

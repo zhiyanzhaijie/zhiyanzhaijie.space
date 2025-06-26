@@ -32,6 +32,7 @@ page-blog-by-tag-description = 所有与{$tagName}相关的文章
 page-blog-post-published = 发布于
 page-blog-post-word-count = {$count} 字
 page-blog-post-reading-time = {$minutes} 分钟阅读
+page-blog-post-available-languages = 其他语言版本:
 
 page-not-found-title = 页面未找到
 page-not-found-description = 您访问的页面不存在

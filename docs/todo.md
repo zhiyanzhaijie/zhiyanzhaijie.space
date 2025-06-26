@@ -9,5 +9,6 @@
 - [X] 水磨石
 - [X] h5
 - [ ] 字体
-- [ ] https https://www.cloudflare.com/application-services/products/ssl/
+- [X] https
 - [X] spa路由定向
+- [ ] 单一文件中英文

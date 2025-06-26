@@ -1,12 +1,16 @@
 use crate::models::post::get_all_posts;
 use crate::models::tag::Tag;
 use crate::routes::Route;
+use crate::ACTIVE_LOCALE;
 use dioxus::prelude::*;
 use dioxus_i18n::t;
 use std::str::FromStr;
 
 #[component]
 pub fn BlogByTag(tag: String) -> Element {
+    let current_locale = *ACTIVE_LOCALE.read();
+    let current_lang = current_locale.as_str();
+
     let posts = get_all_posts();
     // Parse the tag string to Tag enum
     let tag_enum = match Tag::from_str(&tag) {
@@ -30,15 +34,16 @@ pub fn BlogByTag(tag: String) -> Element {
         }
     };
 
-    // 过滤指定标签的文章
+    // 过滤指定标签的文章，并且只包含当前语言的文章
     let filtered_posts: Vec<_> = posts
         .iter()
         .filter(|(post_meta, _)| {
-            post_meta
-                .tags
-                .as_ref()
-                .map(|tags| tags.contains(&tag_enum))
-                .unwrap_or(false)
+            post_meta.lang == current_lang
+                && post_meta
+                    .tags
+                    .as_ref()
+                    .map(|tags| tags.contains(&tag_enum))
+                    .unwrap_or(false)
         })
         .collect();
 

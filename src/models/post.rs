@@ -17,8 +17,14 @@ struct RawPostMetadata {
     pub title: String,
     pub date: String,
     pub slug: String,
+    #[serde(default = "default_lang")] // Default to "en" if not present
+    pub lang: String,
     #[serde(default)] // Tags are optional, default to an empty vec if not present or null
     pub tags: Option<Vec<String>>,
+}
+
+fn default_lang() -> String {
+    "en".to_string()
 }
 
 // Enriched metadata structure used in the application
@@ -27,6 +33,7 @@ pub struct PostMetadata {
     pub title: String,
     pub date: String, // Keep as string for display, but parse for sorting
     pub slug: String,
+    pub lang: String,
     pub tags: Option<Vec<Tag>>,
     pub word_count: usize,
 }
@@ -80,6 +87,7 @@ pub fn load_markdown_posts() -> Vec<(PostMetadata, String)> {
                             title: raw_meta.title,
                             date: raw_meta.date,
                             slug: raw_meta.slug,
+                            lang: raw_meta.lang,
                             tags,
                             word_count,
                         };
@@ -147,6 +155,31 @@ pub fn get_post_by_slug(slug: &str) -> Option<(Arc<PostMetadata>, String)> {
     })
 }
 
+pub fn get_post_by_slug_and_lang(slug: &str, lang: &str) -> Option<(Arc<PostMetadata>, String)> {
+    let decoded_slug = percent_decode(slug);
+    POSTS.iter().find_map(|(meta, content)| {
+        if meta.slug == decoded_slug && meta.lang == lang {
+            Some((Arc::new(meta.clone()), content.clone()))
+        } else {
+            None
+        }
+    })
+}
+
+pub fn get_available_languages_for_slug(slug: &str) -> Vec<String> {
+    let decoded_slug = percent_decode(slug);
+    POSTS
+        .iter()
+        .filter_map(|(meta, _)| {
+            if meta.slug == decoded_slug {
+                Some(meta.lang.clone())
+            } else {
+                None
+            }
+        })
+        .collect()
+}
+
 // 解析单个markdown文件内容 - 保留以备将来使用
 #[allow(dead_code)]
 fn parse_markdown_content(content: &str) -> Option<(PostMetadata, String)> {
@@ -176,6 +209,7 @@ fn parse_markdown_content(content: &str) -> Option<(PostMetadata, String)> {
                 title: raw_meta.title,
                 date: raw_meta.date,
                 slug: raw_meta.slug,
+                lang: raw_meta.lang,
                 tags,
                 word_count,
             };

@@ -12,3 +12,7 @@ LLM.*
 package*
 *.css
 !tailwind.css
+
+
+# md ignore
+**/*.draft.md
