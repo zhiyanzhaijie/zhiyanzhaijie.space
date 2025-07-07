@@ -1,4 +1,4 @@
-use dioxus::document::Stylesheet;
+use dioxus::document::{Link, Stylesheet};
 use dioxus::prelude::*;
 use dioxus_i18n::{prelude::*, t};
 use unic_langid::{langid, LanguageIdentifier};
@@ -65,6 +65,9 @@ impl AppLocale {
 }
 
 static ACTIVE_LOCALE: GlobalSignal<AppLocale> = Signal::global(AppLocale::default);
+const FAVICON: Asset = asset!("/assets/favicon.ico");
+const TW_STYLES: Asset = asset!("/assets/tailwind.css");
+const NOISE_IMAGE: Asset = asset!("/assets/noise.png");
 
 #[allow(non_snake_case)]
 fn App() -> Element {
@@ -160,11 +163,9 @@ fn App() -> Element {
         }
     });
 
-    const TW_STYLES: Asset = asset!("/assets/tailwind.css");
-    const NOISE_IMAGE: Asset = asset!("/assets/noise.png");
-
     rsx! {
         title { { t!("common-site-title") } }
+        Link { rel: "icon", href: FAVICON }
         Stylesheet {
           href: TW_STYLES
         }

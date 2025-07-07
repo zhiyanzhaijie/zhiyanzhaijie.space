@@ -53,7 +53,7 @@ pub fn BlogByTag(tag: String) -> Element {
 
     rsx! {
         div {
-            class: "space-y-1 max-w-4xl mx-auto",
+            class: "space-y-1 max-w-4xl sm:ml-2 lg:ml-8",
 
             // 标签标题和面包屑导航
             div {

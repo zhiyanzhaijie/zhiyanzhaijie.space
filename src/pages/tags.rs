@@ -52,7 +52,7 @@ pub fn TagList() -> Element {
 
             // 主要内容区域
             div {
-                class: "flex-1 space-y-6 lg:space-y-8 mr-44 sm:mr-52",
+                class: "flex-1 space-y-6 sm:ml-2 lg:ml-8 lg:space-y-8 mr-44 sm:mr-52",
 
                 // 页面标题
                 div {
