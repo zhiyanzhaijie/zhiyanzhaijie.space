@@ -7,9 +7,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-dioxus = { version = "0.6.3", features = ["router"] }
-dioxus-web = { version = "0.6.3", default-features = false }
-dioxus-i18n = "0.4.2"
+dioxus = { version = "0.7.4", features = ["router", "fullstack"] }
+dioxus-i18n = "0.5.1"
 unic-langid = "0.9"
 js-sys = "0.3"
 wasm-bindgen = "0.2"
@@ -48,6 +47,7 @@ rand = { version = "0.8", features = ["getrandom"] }
 [features]
 default = ["web"]
 web = ["dioxus/web"]
+server = ["dioxus/server"]
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 # Updated tokio version to specific 1.36.0 and feature "full"

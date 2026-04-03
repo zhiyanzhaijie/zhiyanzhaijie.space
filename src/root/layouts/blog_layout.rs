@@ -1,4 +1,4 @@
-use crate::routes::Route;
+use crate::root::Route;
 use dioxus::prelude::*;
 
 #[component]

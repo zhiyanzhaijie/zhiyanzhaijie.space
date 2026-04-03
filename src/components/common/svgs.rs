@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::AppLocale;
+use crate::root::AppLocale;
 
 #[component]
 pub fn I18NSVG(lang: AppLocale) -> Element {

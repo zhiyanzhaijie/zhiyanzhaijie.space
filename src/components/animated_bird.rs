@@ -4,6 +4,7 @@ use rand::prelude::SliceRandom;
 use rand::Rng;
 use std::collections::{HashMap, HashSet};
 
+#[cfg(target_arch = "wasm32")]
 fn is_mobile() -> bool {
     if let Some(window) = web_sys::window() {
         if let Ok(Some(media_query)) = window.match_media("(max-width: 768px)") {
@@ -21,6 +22,11 @@ fn is_mobile() -> bool {
         info!("无法获取窗口对象，默认为桌面端");
         false
     }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn is_mobile() -> bool {
+    false
 }
 
 // 动画配置结构
@@ -502,6 +508,7 @@ pub fn AnimatedBird() -> Element {
             let opacity_signal = opacity_states.clone();
             let config = config.clone();
 
+            #[cfg(target_arch = "wasm32")]
             spawn(async move {
                 // 使用配置的初始延迟
                 gloo_timers::future::TimeoutFuture::new(config().initial_delay_ms).await;

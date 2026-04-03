@@ -1,6 +1,7 @@
 use crate::{
     components::common::svgs::{MoonSVG, SunSVG},
-    AppTheme, ACTIVE_THEME,
+    root::AppTheme,
+    root::ACTIVE_THEME,
 };
 use dioxus::prelude::*;
 use dioxus_i18n::t;

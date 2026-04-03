@@ -1,4 +1,4 @@
-use crate::{components::common::svgs::I18NSVG, AppLocale, ACTIVE_LOCALE};
+use crate::{components::common::svgs::I18NSVG, root::AppLocale, root::ACTIVE_LOCALE};
 use dioxus::prelude::*;
 use dioxus_i18n::{prelude::*, t};
 

@@ -4,11 +4,10 @@ use crate::{
         svgs::{LogoSVG, MenuSVG},
         theme_switcher::ThemeSwitcher,
     },
-    routes::Route,
+    root::Route,
 };
 use dioxus::prelude::*;
 use dioxus_i18n::t;
-use dioxus_router::prelude::use_route;
 
 #[component]
 pub fn MainLayout() -> Element {
@@ -35,7 +34,7 @@ pub fn MainLayout() -> Element {
                         Link {
                             class: "mr-4",
                             to: Route::BlogList {},
-                            LogoSVG  {  }
+                            LogoSVG {}
                         }
 
                         Link {
@@ -108,14 +107,12 @@ pub fn MainLayout() -> Element {
                         }
                     }
 
-                    // 桌面端：显示切换按钮
                     div {
                         class: "hidden sm:flex items-center gap-2",
                         ThemeSwitcher { is_mobile: false }
                         LocaleSwitcher {}
                     }
 
-                    // 移动端：显示菜单按钮
                     button {
                         class: "sm:hidden flex items-center justify-center w-10 h-10 rounded-md hover:bg-muted/50 transition-colors",
                         onclick: move |_| {
@@ -127,18 +124,15 @@ pub fn MainLayout() -> Element {
                 }
             }
 
-            // 移动端折叠菜单
             if *is_menu_open.read() {
                 div {
                     class: "sm:hidden fixed inset-0 z-99",
-                    // 背景遮罩
                     div {
                         class: "absolute inset-0",
                         onclick: move |_| {
                             is_menu_open.set(false);
                         },
                     }
-                    // 菜单面板
                     div {
                         class: "absolute top-16 right-4 bg-background border border-border rounded-lg shadow-lg p-1",
                         div {
@@ -150,7 +144,6 @@ pub fn MainLayout() -> Element {
                 }
             }
 
-            // 主要内容区域
             main {
                 class: "container mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-4 sm:py-6 md:py-8 relative z-10 max-w-full overflow-x-hidden",
                 Outlet::<Route> {}

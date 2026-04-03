@@ -2,12 +2,11 @@ use dioxus::prelude::*;
 use dioxus_i18n::t;
 
 #[component]
-pub fn About() -> Element {
+pub fn AboutView() -> Element {
     rsx! {
         div {
             class: "max-w-4xl lg:ml-8 sm:ml-2 space-y-6 sm:space-y-8",
 
-            // 标题
             div {
                 class: "mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-border/30",
                 h1 {
@@ -20,7 +19,6 @@ pub fn About() -> Element {
                 }
             }
 
-            // 简单介绍
             div {
                 class: "space-y-4 sm:space-y-6",
                 p {
@@ -37,7 +35,6 @@ pub fn About() -> Element {
                 }
             }
 
-            // 联系方式
             div {
                 class: "pt-6 sm:pt-8 border-t border-border/30",
                 h2 {

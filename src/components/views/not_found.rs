@@ -1,10 +1,9 @@
-use crate::models::tag::Tag;
-use crate::routes::Route;
+use crate::root::Route;
 use dioxus::prelude::*;
 use dioxus_i18n::t;
 
 #[component]
-pub fn PageNotFound(route: Vec<String>) -> Element {
+pub fn NotFoundView(route: Vec<String>) -> Element {
     rsx! {
         div {
             class: "min-h-screen flex items-center justify-center bg-background px-4",
@@ -12,7 +11,6 @@ pub fn PageNotFound(route: Vec<String>) -> Element {
             div {
                 class: "container mx-auto py-8 text-center max-w-4xl",
 
-                // 404 图标
                 div {
                     class: "mb-6 sm:mb-8",
                     svg {
@@ -28,7 +26,6 @@ pub fn PageNotFound(route: Vec<String>) -> Element {
                     }
                 }
 
-                // 错误信息
                 div {
                     class: "max-w-2xl mx-auto mb-6 sm:mb-8",
                     h1 {
@@ -44,7 +41,6 @@ pub fn PageNotFound(route: Vec<String>) -> Element {
                         { t!("page-not-found-message") }
                     }
 
-                    // 显示尝试访问的路径
                     if !route.is_empty() {
                         div {
                             class: "bg-card/60 border border-border rounded-lg p-3 sm:p-4 mb-6 text-left",
@@ -60,7 +56,6 @@ pub fn PageNotFound(route: Vec<String>) -> Element {
                     }
                 }
 
-                // 操作按钮
                 div {
                     class: "flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4",
 
@@ -97,9 +92,6 @@ pub fn PageNotFound(route: Vec<String>) -> Element {
                         { t!("main-layout-nav-articles") }
                     }
                 }
-
-
-
             }
         }
     }

@@ -9,6 +9,8 @@ node_modules
 # vibecoding
 LLM.*
 
+**/*TODO*
+
 package*
 *.css
 !tailwind.css

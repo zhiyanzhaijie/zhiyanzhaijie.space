@@ -1,12 +1,18 @@
-use crate::components::layout::MainLayout;
-use crate::pages::about::About;
-use crate::pages::blog::BlogByTag;
-use crate::pages::blog::BlogLayout;
-use crate::pages::blog::BlogList;
-use crate::pages::blog_post::BlogPost;
-use crate::pages::page_not_found::PageNotFound;
-use crate::pages::tags::TagList;
+mod about;
+mod blog_by_tag;
+mod blog_list;
+mod blog_post;
+mod not_found;
+mod tags;
+
+use super::layouts::{BlogLayout, MainLayout};
+use about::About;
+use blog_by_tag::BlogByTag;
+use blog_list::BlogList;
+use blog_post::BlogPost;
 use dioxus::prelude::*;
+use not_found::PageNotFound;
+use tags::TagList;
 
 #[derive(Routable, Clone)]
 #[rustfmt::skip]
@@ -34,7 +40,6 @@ pub enum Route {
         #[end_nest]
     #[end_layout]
 
-    // 404页面
     #[route("/:..route")]
     PageNotFound { route: Vec<String> },
 }

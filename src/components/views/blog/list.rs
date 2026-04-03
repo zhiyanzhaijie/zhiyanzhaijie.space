@@ -1,25 +1,21 @@
 use crate::models::post::get_all_posts;
-use crate::routes::Route;
-use crate::ACTIVE_LOCALE;
+use crate::root::{Route, ACTIVE_LOCALE};
 use dioxus::prelude::*;
 use dioxus_i18n::t;
 
 #[component]
-pub fn BlogList() -> Element {
-    // Filter posts to only show current language
+pub fn BlogListView() -> Element {
     let posts = use_memo(move || {
         let current_locale = *ACTIVE_LOCALE.read();
         let current_lang = current_locale.as_str();
 
         let all_posts = get_all_posts();
 
-        // Only include posts that match the current language
         let mut filtered_posts: Vec<_> = all_posts
             .into_iter()
             .filter(|(meta, _)| meta.lang == current_lang)
             .collect();
 
-        // Sort by date (newest first)
         filtered_posts.sort_by(|a, b| {
             use chrono::NaiveDate;
             let date_a = NaiveDate::parse_from_str(&a.0.date, "%Y-%m-%d")
@@ -55,7 +51,6 @@ pub fn BlogList() -> Element {
                             div {
                                 class: "flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1 flex-wrap gap-y-1 sm:gap-y-0",
 
-                                // 文章标题
                                 Link {
                                     to: Route::BlogPost { slug: slug_clone.clone() },
                                     class: "text-sm sm:text-sm font-medium text-foreground hover:text-primary transition-colors truncate order-1 flex-shrink min-w-0",
@@ -63,7 +58,6 @@ pub fn BlogList() -> Element {
                                     "{title_clone}"
                                 }
 
-                                // 标签
                                 if let Some(tags) = &tags_clone {
                                     if let Some(first_tag) = tags.first() {
                                         Link {
@@ -75,7 +69,6 @@ pub fn BlogList() -> Element {
                                 }
                             }
 
-                            // 右侧：日期和字数
                             div {
                                 class: "flex items-center justify-start sm:justify-end space-x-3 sm:space-x-4 text-xs text-muted-foreground flex-shrink-0",
                                 span {
