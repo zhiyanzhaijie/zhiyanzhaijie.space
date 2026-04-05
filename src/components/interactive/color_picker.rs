@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use dioxus_markdown::CustomComponents;
 
 #[component]
 pub fn ColorPickerComponent(initial_color: String) -> Element {
@@ -13,7 +14,6 @@ pub fn ColorPickerComponent(initial_color: String) -> Element {
                     show_picker.set(!show_picker());
                 }
             }
-
             {
                 if show_picker() {
                     rsx! {
@@ -46,4 +46,15 @@ pub fn ColorPickerComponent(initial_color: String) -> Element {
             }
         }
     }
+}
+
+pub fn registe_md_comp(components: &mut CustomComponents) {
+    components.register("ColorPicker", |props| {
+        let initial_color = props
+            .get("color")
+            .unwrap_or_else(|| "#ff0000".to_string());
+        Ok(rsx! {
+            ColorPickerComponent { initial_color }
+        })
+    });
 }

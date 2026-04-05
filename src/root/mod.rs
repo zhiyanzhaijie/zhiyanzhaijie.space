@@ -2,6 +2,7 @@ pub mod layouts;
 mod routes;
 
 use crate::components::animated_bird::AnimatedBird;
+use crate::impls::{app_runtime, i18n as app_i18n};
 use dioxus::document::{Link, Stylesheet};
 use dioxus::prelude::*;
 use dioxus_i18n::{prelude::*, t};
@@ -66,11 +67,7 @@ const NOISE_IMAGE: Asset = asset!("/assets/noise.png");
 
 #[allow(non_snake_case)]
 pub fn App() -> Element {
-    use_init_i18n(|| {
-        I18nConfig::new(langid!("zh-CN"))
-            .with_locale((langid!("zh-CN"), include_str!("../i18n/zh-CN/index.ftl")))
-            .with_locale((langid!("en-US"), include_str!("../i18n/en-US/index.ftl")))
-    });
+    use_init_i18n(app_i18n::build_i18n_config);
 
     let mut i18n = i18n();
 
@@ -81,79 +78,21 @@ pub fn App() -> Element {
     });
 
     use_effect(move || {
-        #[cfg(target_arch = "wasm32")]
-        {
-            if let Some(window) = web_sys::window() {
-                if let Ok(Some(storage)) = window.local_storage() {
-                    if let Ok(Some(saved_theme)) = storage.get_item("app_theme") {
-                        let theme = match saved_theme.as_str() {
-                            "dark" => AppTheme::Dark,
-                            _ => AppTheme::Light,
-                        };
-                        *ACTIVE_THEME.write() = theme;
-                        log::info!("Loaded theme from local storage: {}", saved_theme);
-                    } else {
-                        log::info!("No saved theme found, using default");
-                    }
-                } else {
-                    log::warn!("Local storage is not available");
-                }
-            }
+        if let Some(theme) = app_runtime::load_theme() {
+            *ACTIVE_THEME.write() = theme;
         }
     });
 
     use_effect(move || {
-        #[cfg(target_arch = "wasm32")]
-        {
-            let theme = *ACTIVE_THEME.read();
-            if let Some(window) = web_sys::window() {
-                if let Some(document) = window.document() {
-                    if let Some(html) = document.document_element() {
-                        html.set_attribute("class", theme.as_str()).unwrap();
-                    }
-                }
-            }
-        }
+        app_runtime::sync_theme_to_document(*ACTIVE_THEME.read());
     });
 
     use_effect(move || {
-        #[cfg(target_arch = "wasm32")]
-        {
-            if let Some(window) = web_sys::window() {
-                if let Ok(Some(storage)) = window.local_storage() {
-                    if let Ok(Some(saved_locale)) = storage.get_item("app_locale") {
-                        let locale = match saved_locale.as_str() {
-                            "en" => AppLocale::EN,
-                            _ => AppLocale::CN,
-                        };
-                        *ACTIVE_LOCALE.write() = locale;
-                        log::info!("Loaded locale from local storage: {}", saved_locale);
-                    } else {
-                        log::info!("No saved locale found, using default (CN)");
-                        if let Err(e) = storage.set_item("app_locale", AppLocale::default().as_str())
-                        {
-                            log::error!("Failed to save default locale to local storage: {:?}", e);
-                        }
-                    }
-                } else {
-                    log::warn!("Local storage is not available for locale");
-                }
-            }
-        }
+        *ACTIVE_LOCALE.write() = app_runtime::load_locale_or_default();
     });
 
     use_effect(move || {
-        #[cfg(target_arch = "wasm32")]
-        {
-            let locale = *ACTIVE_LOCALE.read();
-            if let Some(window) = web_sys::window() {
-                if let Some(document) = window.document() {
-                    if let Some(html) = document.document_element() {
-                        html.set_attribute("lang", locale.as_str()).unwrap();
-                    }
-                }
-            }
-        }
+        app_runtime::sync_locale_to_document(*ACTIVE_LOCALE.read());
     });
 
     rsx! {

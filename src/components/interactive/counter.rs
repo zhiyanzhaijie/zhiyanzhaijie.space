@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use dioxus_markdown::CustomComponents;
 
 #[component]
 pub fn InteractiveCounterButton(label: String) -> Element {
@@ -13,4 +14,13 @@ pub fn InteractiveCounterButton(label: String) -> Element {
             {format!("{} (点击次数: {})", label, count())}
         }
     }
+}
+
+pub fn registe_md_comp(components: &mut CustomComponents) {
+    components.register("IncrementCounter", |props| {
+        let label = props.get("label").unwrap_or_else(|| "Counter".to_string());
+        Ok(rsx! {
+            InteractiveCounterButton { label }
+        })
+    });
 }

@@ -32,7 +32,7 @@ pub fn TestHear(label: String) -> Element {
 }
 ```
 这是结果：
-[testhear](interactive:TestHear)
+<TestHear/>
 
 
 ```js
@@ -41,8 +41,11 @@ let b = 3;
 for (let i = 0; i < 100; i ++) {
   a += b
 }
-
-console.log(a)
+a
 ```
 
 Happy for using.
+
+<CodeRunner/>
+<ColorPicker/>
+<IncrementCounter/>

@@ -1,12 +1,14 @@
 use dioxus::prelude::*;
 use dioxus_i18n::t;
-
+use crate::components::markdown::hooks::use_markdown_components;
 use crate::components::markdown::renderer::MarkdownRenderer;
 use crate::models::post::{get_available_languages_for_slug, get_post_by_slug_and_lang};
 use crate::root::{Route, ACTIVE_LOCALE};
 
 #[component]
 pub fn BlogPostView(slug: String) -> Element {
+    let markdown_components = use_markdown_components();
+
     let post = use_memo(move || {
         let current_locale = *ACTIVE_LOCALE.read();
         let active_lang = current_locale.as_str();
@@ -66,7 +68,10 @@ pub fn BlogPostView(slug: String) -> Element {
                         }
 
                         div { class: "prose prose-sm sm:prose-base lg:prose-lg max-w-none prose-slate dark:prose-invert",
-                            MarkdownRenderer { content: content.clone() }
+                            MarkdownRenderer {
+                                content: content.clone(),
+                                components: markdown_components,
+                            }
                         }
                     }
 

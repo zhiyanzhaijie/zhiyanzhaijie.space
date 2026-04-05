@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use dioxus_markdown::CustomComponents;
 
 #[component]
 pub fn TestHear() -> Element {
@@ -10,7 +11,15 @@ pub fn TestHear() -> Element {
             onclick: move |_| {
                 count += 10;
             },
-            {format!("(点击次数: {})", count())}
+            "(点击次数: {count})"
         }
     }
+}
+
+pub fn registe_md_comp(components: &mut CustomComponents) {
+    components.register("TestHear", |_props| {
+        Ok(rsx! {
+            TestHear {}
+        })
+    });
 }

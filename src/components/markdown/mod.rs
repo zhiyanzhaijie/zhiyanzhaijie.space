@@ -1,3 +1,2 @@
-pub mod registry;
+pub mod hooks;
 pub mod renderer;
-pub mod node;
