@@ -5,12 +5,11 @@ use dioxus_i18n::t;
 pub fn AboutView() -> Element {
     rsx! {
         div {
-            class: "max-w-4xl lg:ml-8 sm:ml-2 space-y-6 sm:space-y-8",
+            class: "max-w-2xl mx-auto space-y-8",
 
             div {
-                class: "mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-border/30",
                 h1 {
-                    class: "text-lg sm:text-xl font-medium text-foreground mb-2 sm:mb-3",
+                    class: "text-xl sm:text-2xl font-semibold tracking-tight text-foreground mb-2",
                     { t!("page-about-title") }
                 }
                 p {
@@ -20,7 +19,7 @@ pub fn AboutView() -> Element {
             }
 
             div {
-                class: "space-y-4 sm:space-y-6",
+                class: "space-y-4",
                 p {
                     class: "text-sm sm:text-base text-foreground leading-relaxed",
                     { t!("page-about-intro") }
@@ -36,13 +35,12 @@ pub fn AboutView() -> Element {
             }
 
             div {
-                class: "pt-6 sm:pt-8 border-t border-border/30",
                 h2 {
-                    class: "text-sm sm:text-base font-medium text-foreground mb-3 sm:mb-4",
+                    class: "text-base font-medium text-foreground mb-3",
                     { t!("page-about-contact") }
                 }
                 div {
-                    class: "space-y-3 sm:space-y-4",
+                    class: "space-y-3",
                     div {
                         class: "text-sm sm:text-base text-muted-foreground",
                         "Email: ..."
@@ -52,7 +50,7 @@ pub fn AboutView() -> Element {
                             href: "https://github.com/zhiyanzhaijie",
                             target: "_blank",
                             rel: "noopener noreferrer",
-                            class: "inline-flex items-center gap-2 text-sm sm:text-base text-foreground hover:text-primary transition-colors underline-offset-4 hover:underline min-h-[44px] sm:min-h-auto",
+                            class: "inline-flex items-center gap-2 text-sm sm:text-base text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline min-h-[44px] sm:min-h-auto",
                             "GitHub"
                         }
                     }

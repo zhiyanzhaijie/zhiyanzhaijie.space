@@ -14,6 +14,7 @@ LLM.*
 package*
 *.css
 !tailwind.css
+!theme.css
 
 
 # md ignore

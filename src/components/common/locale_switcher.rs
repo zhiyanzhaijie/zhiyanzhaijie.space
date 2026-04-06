@@ -8,8 +8,8 @@ pub fn LocaleSwitcher() -> Element {
     let mut i18n = i18n();
 
     let (locale_to_set_on_click, title_for_button) = match current_locale {
-        AppLocale::EN => (AppLocale::CN, t!("locale-switcher-english")),
-        AppLocale::CN => (AppLocale::EN, t!("locale-switcher-chinese")),
+        AppLocale::EN => (AppLocale::CN, t!("locale-switcher-to-chinese")),
+        AppLocale::CN => (AppLocale::EN, t!("locale-switcher-to-english")),
     };
 
     let handle_locale_toggle = move |_| {
@@ -38,12 +38,15 @@ pub fn LocaleSwitcher() -> Element {
 
     rsx! {
         div {
-            class: "locale-switcher p-2",
+            class: "locale-switcher flex items-center justify-center",
             button {
-                class: "p-1 rounded focus:outline-none cursor-pointer",
+                class: "w-8 h-8 flex items-center justify-center rounded focus:outline-none cursor-pointer text-muted-foreground hover:text-foreground transition-colors",
                 onclick: handle_locale_toggle,
                 title: "{title_for_button}",
-                I18NSVG { lang: current_locale }
+                div {
+                    class: "scale-[70%]",
+                    I18NSVG { lang: current_locale }
+                }
             }
         }
     }

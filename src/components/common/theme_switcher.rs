@@ -8,7 +8,6 @@ use dioxus_i18n::t;
 
 #[component]
 pub fn ThemeSwitcher(#[props(default = false)] is_mobile: bool) -> Element {
-    let mut rotation_count = use_signal(|| 0);
 
     let handle_theme_toggle = move |_| {
         let current_theme = *ACTIVE_THEME.read();
@@ -18,7 +17,6 @@ pub fn ThemeSwitcher(#[props(default = false)] is_mobile: bool) -> Element {
         };
 
         *ACTIVE_THEME.write() = new_theme;
-        rotation_count.set(rotation_count() + 1);
 
         let theme_str = match new_theme {
             AppTheme::Light => "light",
@@ -45,55 +43,24 @@ pub fn ThemeSwitcher(#[props(default = false)] is_mobile: bool) -> Element {
         AppTheme::Light => t!("theme-switcher-light"),
         AppTheme::Dark => t!("theme-switcher-dark"),
     };
+    let button_class = if is_mobile {
+        "w-8 h-8 flex items-center justify-center rounded focus:outline-none cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+    } else {
+        "w-8 h-8 flex items-center justify-center rounded focus:outline-none cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+    };
 
-    let rotation_degrees = -rotation_count() * 180;
-
-    if is_mobile {
-        rsx! {
-            div {
-                class: "p-2",
-                button {
-                    class: "p-1 rounded focus:outline-none cursor-pointer",
-                    title: "{title_text}",
-                    onclick: handle_theme_toggle,
-
+    rsx! {
+        div {
+            class: "flex items-center justify-center",
+            button {
+                class: "{button_class}",
+                title: "{title_text}",
+                onclick: handle_theme_toggle,
+                div {
+                    class: "scale-[70%]",
                     match current_theme {
                         AppTheme::Light => rsx! { MoonSVG {} },
                         AppTheme::Dark => rsx! { SunSVG {} },
-                    }
-                }
-            }
-        }
-    } else {
-        rsx! {
-            div {
-                class: "relative w-12 h-12 p-2 mr-4",
-
-                button {
-                    class: "w-full h-full bg-transparent border-none rounded-md cursor-pointer focus:outline-none",
-                    title: "{title_text}",
-
-                    div {
-                        class: "flex w-18 h-6 overflow-hidden justify-center relative",
-
-                        div {
-                            class: "w-6 h-16 flex flex-col transition-transform duration-800 ease-in-ou",
-                            style: "transform: rotate({rotation_degrees}deg);",
-                            onclick: handle_theme_toggle,
-
-                            div {
-                                class: "w-6 h-6 flex-shrink-0 flex -rotate-90 items-center justify-center drop-shadow-lg",
-                                MoonSVG {}
-                            }
-                            div {
-                              class: "w-4 h-4 flex-shrink-0"
-                            }
-
-                            div {
-                                class: "w-6 h-6 flex-shrink-0 flex items-center justify-center drop-shadow-lg",
-                                SunSVG {}
-                            }
-                        }
                     }
                 }
             }

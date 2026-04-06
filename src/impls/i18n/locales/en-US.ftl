@@ -11,6 +11,8 @@ main-layout-nav-about = About
 
 locale-switcher-chinese = 中文
 locale-switcher-english = English
+locale-switcher-to-chinese = Switch to 中文
+locale-switcher-to-english = Switch to English
 
 theme-switcher-light = Light mode
 theme-switcher-dark = Dark mode

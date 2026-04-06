@@ -30,7 +30,7 @@ pub fn BlogListView() -> Element {
 
     rsx! {
         div {
-            class: "space-y-1 w-full max-w-4xl",
+            class: "space-y-1 w-full max-w-2xl mx-auto",
             if posts().is_empty() {
                 div {
                     class: "text-center py-12 text-muted-foreground",
@@ -46,14 +46,14 @@ pub fn BlogListView() -> Element {
                     rsx! {
                         div {
                             key: "{slug_clone}",
-                            class: "group flex flex-col sm:flex-row sm:items-center justify-between py-3 px-3 sm:px-4 hover:bg-muted/30 transition-colors duration-150 rounded-sm gap-2 sm:gap-0",
+                            class: "group flex flex-col sm:flex-row sm:items-center justify-between py-3 gap-2 sm:gap-0",
 
                             div {
                                 class: "flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1 flex-wrap gap-y-1 sm:gap-y-0",
 
                                 Link {
                                     to: Route::BlogPost { slug: slug_clone.clone() },
-                                    class: "text-sm sm:text-sm font-medium text-foreground hover:text-primary transition-colors truncate order-1 flex-shrink min-w-0",
+                                    class: "text-sm font-medium text-foreground hover:underline underline-offset-4 transition-colors truncate order-1 flex-shrink min-w-0",
                                     title: "{title_clone}",
                                     "{title_clone}"
                                 }
@@ -62,8 +62,8 @@ pub fn BlogListView() -> Element {
                                     if let Some(first_tag) = tags.first() {
                                         Link {
                                             to: Route::BlogByTag { tag: first_tag.to_string() },
-                                            class: "flex-shrink-0 text-xs bg-secondary/60 text-secondary-foreground px-2 py-1 rounded-full hover:bg-secondary transition-colors order-2 sm:order-2",
-                                            { t!(first_tag.i18n_key()) }
+                                            class: "flex-shrink-0 text-xs text-muted-foreground hover:text-foreground transition-colors order-2 sm:order-2",
+                                            "#{ t!(first_tag.i18n_key()) }"
                                         }
                                     }
                                 }
