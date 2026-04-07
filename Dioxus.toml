@@ -3,7 +3,7 @@
 [web.app]
 
 # HTML title tag content
-title = "脂砚斋介"
+title = "zhiyanzhaijie"
 
 [web.resource]
 asset_dir = "assets"
@@ -14,14 +14,11 @@ style = []
 # Additional JavaScript files
 script = []
 
-
 [web.dev-server]
-# The directory to serve static assets from.
 asset_dir = "assets"
 
 [web.watcher]
-# The files & directories to monitor for changes
-watch_path = ["src", "src/md"]
+watch_path = []
 
 [web.resource.dev]
 script = []
