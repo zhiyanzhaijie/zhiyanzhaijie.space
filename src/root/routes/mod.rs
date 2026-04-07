@@ -5,7 +5,7 @@ mod blog_post;
 mod not_found;
 mod tags;
 
-use super::layouts::{BlogLayout, MainLayout};
+use super::layouts::{BlogLayout, RootLayout};
 use about::About;
 use blog_by_tag::BlogByTag;
 use blog_list::BlogList;
@@ -14,10 +14,10 @@ use dioxus::prelude::*;
 use not_found::PageNotFound;
 use tags::TagList;
 
-#[derive(Routable, Clone)]
+#[derive(Routable, Clone, PartialEq)]
 #[rustfmt::skip]
 pub enum Route {
-    #[layout(MainLayout)]
+    #[layout(RootLayout)]
         #[redirect("/", || Route::BlogList {})]
 
         #[route("/about")]

@@ -1,6 +1,5 @@
 use crate::root::Route;
 use dioxus::prelude::*;
-use dioxus_i18n::t;
 
 #[component]
 pub fn NotFoundView(route: Vec<String>) -> Element {
@@ -19,11 +18,11 @@ pub fn NotFoundView(route: Vec<String>) -> Element {
                     }
                     h2 {
                         class: "text-xl sm:text-2xl lg:text-3xl font-semibold tracking-tight text-foreground mb-3 sm:mb-4 leading-tight",
-                        { t!("page-not-found-title") }
+                        "Page Not Found"
                     }
                     p {
                         class: "text-sm sm:text-base lg:text-lg text-muted-foreground leading-relaxed mb-6",
-                        { t!("page-not-found-message") }
+                        "Sorry, we couldn't find the page you're looking for."
                     }
 
                     if !route.is_empty() {
@@ -47,13 +46,13 @@ pub fn NotFoundView(route: Vec<String>) -> Element {
                     Link {
                         to: Route::BlogList {},
                         class: "inline-flex items-center px-2 py-2 text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium min-h-[48px] w-full sm:w-auto justify-center underline-offset-4 hover:underline",
-                        { t!("page-not-found-back-home") }
+                        "Back to Home"
                     }
 
                     Link {
                         to: Route::BlogList {},
                         class: "inline-flex items-center px-2 py-2 text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium min-h-[48px] w-full sm:w-auto justify-center underline-offset-4 hover:underline",
-                        { t!("main-layout-nav-articles") }
+                        "Articles"
                     }
                 }
             }

@@ -4,7 +4,6 @@ use crate::{
     root::ACTIVE_THEME,
 };
 use dioxus::prelude::*;
-use dioxus_i18n::t;
 
 #[component]
 pub fn ThemeSwitcher(#[props(default = false)] is_mobile: bool) -> Element {
@@ -40,8 +39,8 @@ pub fn ThemeSwitcher(#[props(default = false)] is_mobile: bool) -> Element {
     let current_theme = *ACTIVE_THEME.read();
 
     let title_text = match current_theme {
-        AppTheme::Light => t!("theme-switcher-light"),
-        AppTheme::Dark => t!("theme-switcher-dark"),
+        AppTheme::Light => "Switch to dark mode",
+        AppTheme::Dark => "Switch to light mode",
     };
     let button_class = if is_mobile {
         "w-8 h-8 flex items-center justify-center rounded focus:outline-none cursor-pointer text-muted-foreground hover:text-foreground transition-colors"

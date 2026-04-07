@@ -1,5 +1,4 @@
 use dioxus::prelude::*;
-use dioxus_i18n::t;
 use crate::components::markdown::hooks::use_markdown_components;
 use crate::components::markdown::renderer::MarkdownRenderer;
 use crate::models::post::{get_available_languages_for_slug, get_post_by_slug_and_lang};
@@ -44,14 +43,14 @@ pub fn BlogPostView(slug: String) -> Element {
 
                             div { class: "flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground",
                                 p { class: "flex items-center",
-                                    { t!("page-blog-post-published") } " {meta.date.clone()}"
+                                    "Published on {meta.date.clone()}"
                                 }
 
                                 span { class: "hidden sm:inline-block text-xs",
                                     "•"
                                 }
                                 span { class: "hidden sm:inline-block text-xs",
-                                    { t!("page-blog-post-word-count", count: meta.word_count) }
+                                    "{meta.word_count} words"
                                 }
                             }
 
@@ -62,7 +61,7 @@ pub fn BlogPostView(slug: String) -> Element {
                                         Link {
                                             to: Route::BlogByTag { tag: tag.to_string() },
                                             class: "inline-flex items-center text-xs text-muted-foreground hover:text-foreground transition-colors",
-                                            "#{ t!(tag.i18n_key()) }"
+                                            "#{ tag.label_en() }"
                                         }
                                     }
                                 }
@@ -82,7 +81,7 @@ pub fn BlogPostView(slug: String) -> Element {
                             Link {
                                 class: "inline-flex items-center gap-2 text-sm sm:text-base text-muted-foreground hover:text-foreground transition-colors",
                                 to: Route::BlogList { },
-                                { t!("common-button-back") }
+                                "Back"
                             }
                         }
                     }
@@ -92,12 +91,12 @@ pub fn BlogPostView(slug: String) -> Element {
         None => {
             rsx! {
                 div { class: "max-w-2xl mx-auto px-4 py-10 sm:py-16 text-center",
-                    h1 { class: "text-xl sm:text-2xl lg:text-3xl font-semibold tracking-tight text-foreground mb-4 leading-tight", { t!("page-not-found-title") } }
-                    p { class: "text-sm sm:text-base text-muted-foreground mb-6 max-w-md mx-auto", { t!("page-not-found-message") } }
+                    h1 { class: "text-xl sm:text-2xl lg:text-3xl font-semibold tracking-tight text-foreground mb-4 leading-tight", "Page Not Found" }
+                    p { class: "text-sm sm:text-base text-muted-foreground mb-6 max-w-md mx-auto", "Sorry, we couldn't find the page you're looking for." }
                     Link {
                         class: "inline-flex items-center justify-center px-2 py-2 text-sm sm:text-base font-medium text-muted-foreground hover:text-foreground transition-colors min-h-[44px] underline-offset-4 hover:underline",
                         to: Route::BlogList { },
-                        { t!("page-not-found-back-home") }
+                        "Back to Home"
                     }
                 }
             }

@@ -2,7 +2,6 @@ use crate::models::post::get_all_posts;
 use crate::models::tag::Tag;
 use crate::root::{Route, ACTIVE_LOCALE};
 use dioxus::prelude::*;
-use dioxus_i18n::t;
 use std::collections::HashMap;
 
 #[component]
@@ -46,13 +45,11 @@ pub fn TagListView() -> Element {
             div {
                 h1 {
                     class: "text-xl sm:text-2xl font-semibold tracking-tight text-foreground mb-2",
-                    { t!("page-tag-list-title") }
+                    "Tag"
                 }
                 p {
                     class: "text-sm sm:text-base text-muted-foreground leading-relaxed",
-                    { t!("page-tag-list-stats",
-                         tagCount: sorted_tags.read().len(),
-                         postCount: get_all_posts().iter().filter(|(meta, _)| meta.lang == current_lang).count()) }
+                    "{sorted_tags.read().len()} tags, {get_all_posts().iter().filter(|(meta, _)| meta.lang == current_lang).count()} articles"
                 }
             }
 
@@ -73,7 +70,7 @@ pub fn TagListView() -> Element {
                             to: Route::BlogByTag { tag: tag.to_string() },
                             h2 {
                                 class: "text-sm sm:text-base font-medium text-foreground hover:underline underline-offset-4",
-                                "#{ t!(tag.i18n_key()) }"
+                                "#{ tag.label_en() }"
                             }
                             span {
                                 class: "flex-shrink-0 text-xs text-muted-foreground",
@@ -104,7 +101,7 @@ pub fn TagListView() -> Element {
                                             class: "flex items-center justify-start sm:justify-end space-x-2 sm:space-x-3 text-xs text-muted-foreground flex-shrink-0",
                                             span {
                                                 class: "font-mono hidden sm:inline",
-                                                { t!("page-blog-post-word-count", count: post_meta.word_count) }
+                                                "{post_meta.word_count} words"
                                             }
                                             span {
                                                 class: "font-mono",

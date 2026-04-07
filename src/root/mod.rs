@@ -5,7 +5,7 @@ use crate::components::animated_bird::AnimatedBird;
 use crate::impls::{app_runtime, i18n as app_i18n};
 use dioxus::document::{Link, Stylesheet};
 use dioxus::prelude::*;
-use dioxus_i18n::{prelude::*, t};
+use dioxus_i18n::prelude::*;
 pub use routes::Route;
 use unic_langid::{langid, LanguageIdentifier};
 
@@ -96,7 +96,7 @@ pub fn App() -> Element {
     });
 
     rsx! {
-        title { { t!("common-site-title") } }
+        title { "zhiyanzhaijie" }
         Link { rel: "icon", href: FAVICON }
         Stylesheet { href: TW_STYLES }
         div {

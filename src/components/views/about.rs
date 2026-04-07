@@ -1,5 +1,4 @@
 use dioxus::prelude::*;
-use dioxus_i18n::t;
 
 #[component]
 pub fn AboutView() -> Element {
@@ -10,11 +9,11 @@ pub fn AboutView() -> Element {
             div {
                 h1 {
                     class: "text-xl sm:text-2xl font-semibold tracking-tight text-foreground mb-2",
-                    { t!("page-about-title") }
+                    "zhiyanzhaijie"
                 }
                 p {
                     class: "text-sm sm:text-base text-muted-foreground leading-relaxed",
-                    { t!("page-about-description") }
+                    "Programming blog"
                 }
             }
 
@@ -22,22 +21,22 @@ pub fn AboutView() -> Element {
                 class: "space-y-4",
                 p {
                     class: "text-sm sm:text-base text-foreground leading-relaxed",
-                    { t!("page-about-intro") }
+                    "Architecture design bachelor, 3 years web experience"
                 }
                 p {
                     class: "text-sm sm:text-base text-muted-foreground leading-relaxed",
-                    { t!("page-about-blog-description") }
+                    "Recently focus on Rust web development."
                 }
                 p {
                     class: "text-sm sm:text-base text-muted-foreground leading-relaxed",
-                    { t!("page-about-tech-stack") }
+                    "Experience: webUI, C#, Rust"
                 }
             }
 
             div {
                 h2 {
                     class: "text-base font-medium text-foreground mb-3",
-                    { t!("page-about-contact") }
+                    "Contact"
                 }
                 div {
                     class: "space-y-3",

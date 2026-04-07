@@ -1,5 +1,5 @@
 mod blog_layout;
-mod main_layout;
+mod root_layout;
 
 pub use blog_layout::BlogLayout;
-pub use main_layout::MainLayout;
+pub use root_layout::RootLayout;

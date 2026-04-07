@@ -2,7 +2,6 @@ use crate::models::post::get_all_posts;
 use crate::models::tag::Tag;
 use crate::root::{Route, ACTIVE_LOCALE};
 use dioxus::prelude::*;
-use dioxus_i18n::t;
 use std::str::FromStr;
 
 #[component]
@@ -19,12 +18,12 @@ pub fn BlogByTagView(tag: String) -> Element {
                     class: "text-center py-8 sm:py-12 text-muted-foreground space-y-3 max-w-2xl mx-auto",
                     div {
                         class: "text-sm sm:text-base",
-                        { t!("page-not-found-message") }
+                        "Sorry, we couldn't find the page you're looking for."
                     }
                     Link {
                         to: Route::TagList {},
                         class: "inline-flex items-center text-sm text-primary hover:text-primary/80 transition-colors min-h-[44px] justify-center",
-                        { t!("page-not-found-back-home") }
+                        "Back to Home"
                     }
                 }
             };
@@ -59,19 +58,19 @@ pub fn BlogByTagView(tag: String) -> Element {
                     Link {
                         to: Route::TagList {},
                         class: "hover:text-foreground transition-colors whitespace-nowrap",
-                        { t!("page-tag-list-title") }
+                        "Tag"
                     }
                     span { class: "mx-1 sm:mx-2", "/" }
-                    span { class: "text-foreground whitespace-nowrap", { t!(tag_enum.i18n_key()) } }
+                    span { class: "text-foreground whitespace-nowrap", "{tag_enum.label_en()}" }
                 }
 
                 h1 {
                     class: "text-xl sm:text-2xl font-semibold tracking-tight text-foreground mb-2 leading-tight",
-                    { t!("page-blog-by-tag-title", tagName: t!(tag_enum.i18n_key())) }
+                    "Articles with \"{tag_enum.label_en()}\""
                 }
                 p {
                     class: "text-sm sm:text-base text-muted-foreground leading-relaxed",
-                    { t!("page-blog-by-tag-description", tagName: t!(tag_enum.i18n_key())) }
+                    "Related to {tag_enum.label_en()}"
                 }
             }
 
@@ -86,7 +85,7 @@ pub fn BlogByTagView(tag: String) -> Element {
                         to: Route::TagList {},
                         class: "inline-flex items-center text-sm text-primary hover:text-primary/80 transition-colors min-h-[44px] justify-center",
                         "← "
-                        { t!("page-tag-list-title") }
+                        "Tag"
                     }
                 }
             } else {
@@ -123,7 +122,7 @@ pub fn BlogByTagView(tag: String) -> Element {
                                                     to: Route::BlogByTag { tag: other_tag.to_string() },
                                                     class: "flex-shrink-0 text-xs text-muted-foreground hover:text-foreground transition-colors",
                                                     title: "View tag",
-                                                    "#{ t!(other_tag.i18n_key()) }"
+                                                    "#{ other_tag.label_en() }"
                                                 }
                                             })
                                         }
@@ -136,7 +135,7 @@ pub fn BlogByTagView(tag: String) -> Element {
                                 span {
                                     class: "font-mono hidden sm:inline",
                                     title: "Word count",
-                                    { t!("page-blog-post-word-count", count: post_meta.word_count) }
+                                    "{post_meta.word_count} words"
                                 }
                                 span {
                                     class: "font-mono",
@@ -154,7 +153,7 @@ pub fn BlogByTagView(tag: String) -> Element {
                         to: Route::TagList {},
                         class: "inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors min-h-[44px] justify-center",
                         "← "
-                        { t!("page-tag-list-title") }
+                        "Tag"
                     }
                 }
             }

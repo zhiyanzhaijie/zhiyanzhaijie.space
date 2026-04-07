@@ -28,6 +28,18 @@ impl Tag {
         }
     }
 
+    pub fn label_en(&self) -> &'static str {
+        match self {
+            Tag::Dioxus => "Dioxus",
+            Tag::Web => "Web",
+            Tag::Rust => "Rust",
+            Tag::AsyncProgramming => "Async Programming",
+            Tag::DevKit => "Devkit",
+            Tag::Book => "Book",
+            Tag::Talk => "Talk",
+        }
+    }
+
     /// Returns the URL-safe string representation
     pub fn to_url_string(&self) -> &'static str {
         match self {

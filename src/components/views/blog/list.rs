@@ -1,7 +1,6 @@
 use crate::models::post::get_all_posts;
 use crate::root::{Route, ACTIVE_LOCALE};
 use dioxus::prelude::*;
-use dioxus_i18n::t;
 
 #[component]
 pub fn BlogListView() -> Element {
@@ -63,7 +62,7 @@ pub fn BlogListView() -> Element {
                                         Link {
                                             to: Route::BlogByTag { tag: first_tag.to_string() },
                                             class: "flex-shrink-0 text-xs text-muted-foreground hover:text-foreground transition-colors order-2 sm:order-2",
-                                            "#{ t!(first_tag.i18n_key()) }"
+                                            "#{ first_tag.label_en() }"
                                         }
                                     }
                                 }
@@ -73,7 +72,7 @@ pub fn BlogListView() -> Element {
                                 class: "flex items-center justify-start sm:justify-end space-x-3 sm:space-x-4 text-xs text-muted-foreground flex-shrink-0",
                                 span {
                                     class: "font-mono hidden sm:inline",
-                                    { t!("page-blog-post-word-count", count: post_meta.word_count) }
+                                    "{post_meta.word_count} words"
                                 }
                                 span {
                                     class: "font-mono text-xs",

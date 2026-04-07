@@ -1,6 +1,6 @@
 use crate::{components::common::svgs::I18NSVG, root::AppLocale, root::ACTIVE_LOCALE};
 use dioxus::prelude::*;
-use dioxus_i18n::{prelude::*, t};
+use dioxus_i18n::prelude::*;
 
 #[component]
 pub fn LocaleSwitcher() -> Element {
@@ -8,8 +8,8 @@ pub fn LocaleSwitcher() -> Element {
     let mut i18n = i18n();
 
     let (locale_to_set_on_click, title_for_button) = match current_locale {
-        AppLocale::EN => (AppLocale::CN, t!("locale-switcher-to-chinese")),
-        AppLocale::CN => (AppLocale::EN, t!("locale-switcher-to-english")),
+        AppLocale::EN => (AppLocale::CN, "Switch to Chinese"),
+        AppLocale::CN => (AppLocale::EN, "Switch to English"),
     };
 
     let handle_locale_toggle = move |_| {
