@@ -1,46 +1,51 @@
 use crate::{
     components::common::svgs::{MoonSVG, SunSVG},
-    root::AppTheme,
-    root::ACTIVE_THEME,
+    components::providers::preference_provider::{resolve_theme, PreferenceContext},
 };
+use crate::IO::user;
 use dioxus::prelude::*;
+use dioxus_use_js::use_js;
+
+use_js!("src/js/theme_bridge.js"::js_apply_theme);
 
 #[component]
 pub fn ThemeSwitcher(#[props(default = false)] is_mobile: bool) -> Element {
+    let mut preference = use_context::<PreferenceContext>();
 
     let handle_theme_toggle = move |_| {
-        let current_theme = *ACTIVE_THEME.read();
+        let current_theme = resolve_theme(preference.read().theme.as_deref());
         let new_theme = match current_theme {
-            AppTheme::Light => AppTheme::Dark,
-            AppTheme::Dark => AppTheme::Light,
+            "light" => "dark",
+            _ => "light",
         };
-
-        *ACTIVE_THEME.write() = new_theme;
-
-        let theme_str = match new_theme {
-            AppTheme::Light => "light",
-            AppTheme::Dark => "dark",
-        };
+        preference.with_mut(|state| {
+            state.theme = Some(new_theme.to_string());
+        });
+        let next_theme = new_theme.to_string();
+        spawn(async move {
+            let _ = js_apply_theme::<()>(next_theme).await;
+        });
+        let theme_str = new_theme;
 
         log::info!("Theme changed to: {}", theme_str);
-
-        #[cfg(target_arch = "wasm32")]
-        {
-            if let Some(window) = web_sys::window() {
-                if let Ok(Some(storage)) = window.local_storage() {
-                    if let Err(e) = storage.set_item("app_theme", theme_str) {
-                        log::error!("Failed to save theme to local storage: {:?}", e);
-                    }
-                }
+        spawn(async move {
+            if let Err(e) = user::set_theme(theme_str.to_string()).await {
+                log::warn!("Failed to save theme to session: {e}");
             }
-        }
+        });
     };
 
-    let current_theme = *ACTIVE_THEME.read();
+    let current_theme = resolve_theme(preference.read().theme.as_deref());
 
+    use_effect(move || {
+        let theme = current_theme.to_string();
+        spawn(async move {
+            let _ = js_apply_theme::<()>(theme).await;
+        });
+    });
     let title_text = match current_theme {
-        AppTheme::Light => "Switch to dark mode",
-        AppTheme::Dark => "Switch to light mode",
+        "light" => "Switch to dark mode",
+        _ => "Switch to light mode",
     };
     let button_class = if is_mobile {
         "w-8 h-8 flex items-center justify-center rounded focus:outline-none cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
@@ -58,8 +63,8 @@ pub fn ThemeSwitcher(#[props(default = false)] is_mobile: bool) -> Element {
                 div {
                     class: "scale-[70%]",
                     match current_theme {
-                        AppTheme::Light => rsx! { MoonSVG {} },
-                        AppTheme::Dark => rsx! { SunSVG {} },
+                        "light" => rsx! { MoonSVG {} },
+                        _ => rsx! { SunSVG {} },
                     }
                 }
             }

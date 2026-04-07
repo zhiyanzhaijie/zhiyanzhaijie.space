@@ -1,12 +1,10 @@
 use dioxus::prelude::*;
 
-use crate::root::AppLocale;
-
 #[component]
-pub fn I18NSVG(lang: AppLocale) -> Element {
-    let (opacity_cn, opacity_en) = match lang {
-        AppLocale::CN => ("1", "0.5"),
-        AppLocale::EN => ("0.5", "1"),
+pub fn I18NSVG(lang: String) -> Element {
+    let (opacity_cn, opacity_en) = match lang.as_str() {
+        "en" => ("0.5", "1"),
+        _ => ("1", "0.5"),
     };
 
     rsx!(

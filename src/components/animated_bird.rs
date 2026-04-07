@@ -101,7 +101,12 @@ struct SquareBlock {
     priority_layer: usize,
 }
 
-fn manhattan_distance_to_center(grid_rows: usize, grid_cols: usize, row: usize, col: usize) -> usize {
+fn manhattan_distance_to_center(
+    grid_rows: usize,
+    grid_cols: usize,
+    row: usize,
+    col: usize,
+) -> usize {
     let center_row = grid_rows / 2;
     let center_col = grid_cols / 2;
     ((row as i32 - center_row as i32).abs() + (col as i32 - center_col as i32).abs()) as usize
@@ -218,7 +223,6 @@ pub fn AnimatedBird() -> Element {
                     let block_content = content_lines.join("\n");
 
                     if !block_content.chars().all(|c| c == ' ' || c == '\n') {
-
                         blocks.push(SquareBlock {
                             content: block_content,
                             block_id,
@@ -254,7 +258,8 @@ pub fn AnimatedBird() -> Element {
                 sorted_blocks.sort_by_key(|block| block.block_id);
 
                 for (block_index, mut block) in sorted_blocks.into_iter().enumerate() {
-                    block.delay = layer_base_delay + block_index as f32 * config.block_interval_seconds;
+                    block.delay =
+                        layer_base_delay + block_index as f32 * config.block_interval_seconds;
                     final_blocks.push(block);
                 }
             }
@@ -291,7 +296,7 @@ pub fn AnimatedBird() -> Element {
 
     rsx! {
         div {
-            class: "fixed inset-0 z-0 pointer-events-none overflow-hidden",
+            class: "fixed inset-0 z-1 opacity-20 pointer-events-none overflow-hidden",
 
             div {
                 class: "absolute",

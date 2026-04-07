@@ -2,9 +2,9 @@ use crate::{
     components::common::{
         locale_switcher::LocaleSwitcher, svgs::LogoSVG, theme_switcher::ThemeSwitcher,
     },
+    components::providers::preference_provider::{resolve_locale, PreferenceContext},
     models::post::{get_available_languages_for_slug, get_post_by_slug_and_lang},
     root::Route,
-    root::ACTIVE_LOCALE,
     utils::markdown_toc::collect_toc_items,
 };
 use dioxus::prelude::*;
@@ -32,8 +32,8 @@ fn load_post_content_with_fallback(slug: &str, lang: &str) -> Option<String> {
 #[component]
 pub fn MainLayout() -> Element {
     let current_route = use_route::<Route>();
-    let current_locale = *ACTIVE_LOCALE.read();
-    let current_lang = current_locale.as_str();
+    let preference = use_context::<PreferenceContext>();
+    let current_lang = resolve_locale(preference.read().locale.as_deref());
 
     let toc_items = if let Route::BlogPost { slug } = &current_route {
         if let Some(content) = load_post_content_with_fallback(slug, current_lang) {

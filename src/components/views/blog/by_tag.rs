@@ -1,13 +1,14 @@
 use crate::models::post::get_all_posts;
 use crate::models::tag::Tag;
-use crate::root::{Route, ACTIVE_LOCALE};
+use crate::components::providers::preference_provider::{resolve_locale, PreferenceContext};
+use crate::root::Route;
 use dioxus::prelude::*;
 use std::str::FromStr;
 
 #[component]
 pub fn BlogByTagView(tag: String) -> Element {
-    let current_locale = *ACTIVE_LOCALE.read();
-    let current_lang = current_locale.as_str();
+    let preference = use_context::<PreferenceContext>();
+    let current_lang = resolve_locale(preference.read().locale.as_deref());
 
     let posts = get_all_posts();
     let tag_enum = match Tag::from_str(&tag) {

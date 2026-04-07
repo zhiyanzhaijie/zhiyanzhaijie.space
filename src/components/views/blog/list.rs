@@ -1,12 +1,13 @@
 use crate::models::post::get_all_posts;
-use crate::root::{Route, ACTIVE_LOCALE};
+use crate::components::providers::preference_provider::{resolve_locale, PreferenceContext};
+use crate::root::Route;
 use dioxus::prelude::*;
 
 #[component]
 pub fn BlogListView() -> Element {
+    let preference = use_context::<PreferenceContext>();
     let posts = use_memo(move || {
-        let current_locale = *ACTIVE_LOCALE.read();
-        let current_lang = current_locale.as_str();
+        let current_lang = resolve_locale(preference.read().locale.as_deref());
 
         let all_posts = get_all_posts();
 

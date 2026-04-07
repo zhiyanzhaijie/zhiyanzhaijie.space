@@ -3,4 +3,5 @@ pub mod common;
 pub mod interactive;
 pub mod layout;
 pub mod markdown;
+pub mod providers;
 pub mod views;

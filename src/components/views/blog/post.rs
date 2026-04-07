@@ -1,17 +1,18 @@
 use dioxus::prelude::*;
 use crate::components::markdown::hooks::use_markdown_components;
 use crate::components::markdown::renderer::MarkdownRenderer;
+use crate::components::providers::preference_provider::{resolve_locale, PreferenceContext};
 use crate::models::post::{get_available_languages_for_slug, get_post_by_slug_and_lang};
-use crate::root::{Route, ACTIVE_LOCALE};
+use crate::root::Route;
 use crate::utils::markdown_toc::inject_heading_anchors_and_collect_toc;
 
 #[component]
 pub fn BlogPostView(slug: String) -> Element {
     let markdown_components = use_markdown_components();
+    let preference = use_context::<PreferenceContext>();
 
     let post = use_memo(move || {
-        let current_locale = *ACTIVE_LOCALE.read();
-        let active_lang = current_locale.as_str();
+        let active_lang = resolve_locale(preference.read().locale.as_deref());
 
         if let Some(post) = get_post_by_slug_and_lang(&slug, active_lang) {
             return Some(post);
