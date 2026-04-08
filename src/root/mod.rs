@@ -83,40 +83,39 @@ pub fn App() -> Element {
     );
 
     rsx! {
-           document::Script { {bootstrap_script} }
-           Link {
-               rel: "preload",
-               href: IA_WRITER_QUATTRO_REGULAR,
-               r#as: "font",
-               r#type: "font/woff2",
-               crossorigin: "anonymous",
-           }
-           Link {
-               rel: "preload",
-               href: IA_WRITER_MONO_REGULAR,
-               r#as: "font",
-               r#type: "font/woff2",
-               crossorigin: "anonymous",
-           }
-           Link {
-               rel: "preload",
-    href: LXGW_REGULAR,
-               r#as: "font",
-               r#type: "font/woff2",
-               crossorigin: "anonymous",
+        document::Script { {bootstrap_script} }
+        Link {
+            rel: "preload",
+            href: IA_WRITER_QUATTRO_REGULAR,
+            r#as: "font",
+            r#type: "font/woff2",
+            crossorigin: "anonymous",
+        }
+        Link {
+            rel: "preload",
+            href: IA_WRITER_MONO_REGULAR,
+            r#as: "font",
+            r#type: "font/woff2",
+            crossorigin: "anonymous",
+        }
+        Link {
+            rel: "preload",
+            href: LXGW_REGULAR,
+            r#as: "font",
+            r#type: "font/woff2",
+            crossorigin: "anonymous",
 
-       }
-           Link { rel: "icon", href: FAVICON }
-           Stylesheet { href: TW_STYLES }
-           Stylesheet { href: FONT_CSS }
-           PreferenceProvider {
-               initial: initial_preference,
-               div {
-                   class: "pointer-events-none fixed inset-0 bg-repeat opacity-[0.035] dark:opacity-[0.020]",
-                   style: "background-image: url({NOISE_IMAGE}); background-size: 180px;",
-               }
-               AnimatedBird {}
-               Router::<Route> {}
-           }
-       }
+        }
+        Link { rel: "icon", href: FAVICON }
+        Stylesheet { href: TW_STYLES }
+        Stylesheet { href: FONT_CSS }
+        PreferenceProvider { initial: initial_preference,
+            div {
+                class: "pointer-events-none fixed inset-0 bg-repeat opacity-[0.035] dark:opacity-[0.020]",
+                style: "background-image: url({NOISE_IMAGE}); background-size: 180px;",
+            }
+            AnimatedBird {}
+            Router::<Route> {}
+        }
+    }
 }

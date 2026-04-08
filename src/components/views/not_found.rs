@@ -11,7 +11,7 @@ pub fn NotFoundView(route: Vec<String>) -> Element {
                 class: "mx-auto py-8 text-center max-w-2xl",
 
                 div {
-                    class: "max-w-2xl mx-auto mb-6 sm:mb-8",
+                    class: "mb-6 sm:mb-8",
                     h1 {
                         class: "text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight text-foreground mb-3 sm:mb-4",
                         "404"
@@ -45,13 +45,13 @@ pub fn NotFoundView(route: Vec<String>) -> Element {
 
                     Link {
                         to: Route::BlogList {},
-                        class: "inline-flex items-center px-2 py-2 text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium min-h-[48px] w-full sm:w-auto justify-center underline-offset-4 hover:underline",
+                        class: "inline-flex items-center p-2 text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium min-h-[48px] w-full sm:w-auto justify-center underline-offset-4 hover:underline",
                         "Back to Home"
                     }
 
                     Link {
                         to: Route::BlogList {},
-                        class: "inline-flex items-center px-2 py-2 text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium min-h-[48px] w-full sm:w-auto justify-center underline-offset-4 hover:underline",
+                        class: "inline-flex items-center p-2 text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium min-h-[48px] w-full sm:w-auto justify-center underline-offset-4 hover:underline",
                         "Articles"
                     }
                 }

@@ -5,7 +5,7 @@ use dioxus::prelude::*;
 pub fn BlogLayout() -> Element {
     rsx! {
         div {
-            class: "w-full",
+            class: "h-full w-full",
             Outlet::<Route> {}
         }
     }

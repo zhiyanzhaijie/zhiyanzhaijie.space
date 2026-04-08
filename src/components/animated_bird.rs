@@ -1,36 +1,9 @@
 use dioxus::prelude::*;
 #[cfg(target_arch = "wasm32")]
 use gloo_timers::future::TimeoutFuture;
-use log::info;
 use std::collections::HashMap;
 
-#[cfg(target_arch = "wasm32")]
-fn is_mobile() -> bool {
-    if let Some(window) = web_sys::window() {
-        if let Ok(Some(media_query)) = window.match_media("(max-width: 768px)") {
-            let is_mobile = media_query.matches();
-            info!(
-                "检测到设备类型: {}",
-                if is_mobile { "移动端" } else { "桌面端" }
-            );
-            is_mobile
-        } else {
-            info!("媒体查询失败，默认为桌面端");
-            false
-        }
-    } else {
-        info!("无法获取窗口对象，默认为桌面端");
-        false
-    }
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-fn is_mobile() -> bool {
-    false
-}
-
-// 动画配置结构
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 struct AnimationConfig {
     grid_rows: usize,
     grid_cols: usize,
@@ -38,49 +11,17 @@ struct AnimationConfig {
     layer_interval_seconds: f32,
     block_interval_seconds: f32,
     opacity_duration_seconds: f32,
-    scale_class: &'static str,
-    position_classes: &'static str,
-    text_classes: &'static str,
-}
-
-impl AnimationConfig {
-    fn desktop() -> Self {
-        Self {
-            grid_rows: 8,
-            grid_cols: 8,
-            initial_delay_ms: 900,
-            layer_interval_seconds: 0.65,
-            block_interval_seconds: 0.15,
-            opacity_duration_seconds: 2.0,
-            scale_class: "scale-[70%]",
-            position_classes: "-bottom-[30%] right-[5%]",
-            text_classes: "font-mono text-xs text-muted-foreground",
-        }
-    }
-
-    fn mobile() -> Self {
-        Self {
-            grid_rows: 8,
-            grid_cols: 8,
-            initial_delay_ms: 900,
-            layer_interval_seconds: 0.65,
-            block_interval_seconds: 0.15,
-            opacity_duration_seconds: 2.0,
-            scale_class: "scale-[55%] w-[130%]",
-            position_classes: "-right-[18%] -bottom-[45%]",
-            text_classes: "font-mono text-xs text-muted-foreground",
-        }
-    }
 }
 
 impl Default for AnimationConfig {
     fn default() -> Self {
-        if is_mobile() {
-            info!("初始化移动端配置");
-            Self::mobile()
-        } else {
-            info!("初始化桌面端配置");
-            Self::desktop()
+        Self {
+            grid_rows: 8,
+            grid_cols: 8,
+            initial_delay_ms: 900,
+            layer_interval_seconds: 0.65,
+            block_interval_seconds: 0.15,
+            opacity_duration_seconds: 2.0,
         }
     }
 }
@@ -113,12 +54,8 @@ fn manhattan_distance_to_center(
 }
 
 // Helper function to generate grid CSS classes
-fn get_grid_classes(rows: usize, cols: usize) -> String {
-    match (rows, cols) {
-        (8, 8) => "grid-cols-8 grid-rows-8",
-        _ => "grid-cols-8 grid-rows-8",
-    }
-    .to_string()
+fn get_grid_classes() -> &'static str {
+    "grid-cols-8 grid-rows-8"
 }
 
 // Helper function to get grid position CSS classes
@@ -152,26 +89,11 @@ fn get_grid_position_classes(row: usize, col: usize) -> String {
 
 #[component]
 pub fn AnimatedBird() -> Element {
-    let mut config = use_signal(|| AnimationConfig::default());
+    let config = AnimationConfig::default();
     let mut animation_state = use_signal(|| AnimationState::Initial);
     let mut square_blocks = use_signal(|| Vec::<SquareBlock>::new());
     let bird_text = include_str!("../bird.txt");
-
-    // 监听窗口大小变化，更新配置
-    use_effect(move || {
-        let new_config = if is_mobile() {
-            info!("响应式更新: 切换到移动端配置");
-            AnimationConfig::mobile()
-        } else {
-            info!("响应式更新: 切换到桌面端配置");
-            AnimationConfig::desktop()
-        };
-        config.set(new_config);
-    });
-
-    // 初始化正方形块
     use_effect({
-        let config = config();
         move || {
             let lines: Vec<&str> = bird_text.lines().collect();
             let max_line_length = lines.iter().map(|line| line.len()).max().unwrap_or(0);
@@ -264,27 +186,21 @@ pub fn AnimatedBird() -> Element {
                 }
             }
 
-            // 按block_id排序，确保渲染时的顺序正确（这保证了网格位置的正确性）
             final_blocks.sort_by_key(|block| block.block_id);
             square_blocks.set(final_blocks);
         }
     });
-
-    // 自动开始动画
     use_effect({
-        let config = config.clone();
         move || {
-            let config_for_effect = config.clone();
-
             #[cfg(target_arch = "wasm32")]
             spawn(async move {
-                TimeoutFuture::new(config_for_effect().initial_delay_ms).await;
+                TimeoutFuture::new(config.initial_delay_ms).await;
                 animation_state.set(AnimationState::Animating);
             });
 
             #[cfg(not(target_arch = "wasm32"))]
             {
-                let _ = config_for_effect().initial_delay_ms;
+                let _ = config.initial_delay_ms;
                 animation_state.set(AnimationState::Animating);
             }
         }
@@ -292,21 +208,19 @@ pub fn AnimatedBird() -> Element {
 
     let current_state = *animation_state.read();
     let blocks = square_blocks.read();
-    let config_for_render = config();
+    let config_for_render = config;
 
     rsx! {
         div {
-            class: "fixed inset-0 z-1 opacity-20 pointer-events-none overflow-hidden",
+            class: "fixed inset-0 opacity-10 md:opacity-18 pointer-events-none overflow-hidden",
 
             div {
-                class: "absolute",
-                class: "{config_for_render.scale_class}",
-                class: "{config_for_render.position_classes}",
+                class: "absolute -right-[36%] top-[10%] md:-right-[8%] md:-bottom-[55%]",
 
                 div {
                     class: "grid",
-                    class: "{get_grid_classes(config_for_render.grid_rows, config_for_render.grid_cols)}",
-                    class: "{config_for_render.text_classes}",
+                    class: "{get_grid_classes()}",
+                    class: "font-mono text-muted-foreground text-[2.4vw] leading-[1.46] md:text-[0.8vw] md:leading-[1.4]",
 
                     for block in blocks.iter() {
                         div {

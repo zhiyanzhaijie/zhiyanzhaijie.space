@@ -1,10 +1,13 @@
-use dioxus::prelude::*;
+use crate::components::common::layout_cell::{LayoutCell, LayoutCellPadding};
 use crate::components::markdown::hooks::use_markdown_components;
 use crate::components::markdown::renderer::MarkdownRenderer;
 use crate::components::providers::preference_provider::{resolve_locale, PreferenceContext};
 use crate::models::post::{get_available_languages_for_slug, get_post_by_slug_and_lang};
 use crate::root::Route;
 use crate::utils::markdown_toc::inject_heading_anchors_and_collect_toc;
+use dioxus::document::Stylesheet;
+use dioxus::prelude::*;
+const MARKDOWN_CSS: Asset = asset!("/assets/markdown.css");
 
 #[component]
 pub fn BlogPostView(slug: String) -> Element {
@@ -35,9 +38,10 @@ pub fn BlogPostView(slug: String) -> Element {
         Some((meta, content)) => {
             let (content_with_anchors, _) = inject_heading_anchors_and_collect_toc(&content);
             rsx! {
-                div { class: "w-full px-2 sm:px-4 py-4 overflow-hidden overflow-y-auto",
-
-                    article { class: "max-w-2xl mx-auto",
+                LayoutCell {
+                    padding: LayoutCellPadding::Normal,
+                    Stylesheet { href: MARKDOWN_CSS }
+                    article {
                         header { class: "mb-7",
                             h1 { class: "text-2xl sm:text-3xl font-semibold tracking-tight text-foreground mb-3 leading-tight", {meta.title.clone()} }
 
@@ -75,14 +79,14 @@ pub fn BlogPostView(slug: String) -> Element {
                                 components: markdown_components,
                             }
                         }
-                    }
 
-                    nav { class: "mt-8 sm:mt-12 pt-6 sm:pt-8",
-                        div { class: "max-w-2xl mx-auto hover:underline",
-                            Link {
-                                class: "inline-flex items-center gap-2 text-sm sm:text-base text-muted-foreground hover:text-foreground transition-colors",
-                                to: Route::BlogList { },
-                                "Back"
+                        nav { class: "mt-8 sm:mt-12 pt-6 sm:pt-8",
+                            div { class: "hover:underline",
+                                Link {
+                                    class: "inline-flex items-center gap-2 text-sm sm:text-base text-muted-foreground hover:text-foreground transition-colors",
+                                    to: Route::BlogList { },
+                                    "Back"
+                                }
                             }
                         }
                     }
@@ -91,13 +95,16 @@ pub fn BlogPostView(slug: String) -> Element {
         }
         None => {
             rsx! {
-                div { class: "max-w-2xl mx-auto px-4 py-10 sm:py-16 text-center",
-                    h1 { class: "text-xl sm:text-2xl lg:text-3xl font-semibold tracking-tight text-foreground mb-4 leading-tight", "Page Not Found" }
-                    p { class: "text-sm sm:text-base text-muted-foreground mb-6 max-w-md mx-auto", "Sorry, we couldn't find the page you're looking for." }
-                    Link {
-                        class: "inline-flex items-center justify-center px-2 py-2 text-sm sm:text-base font-medium text-muted-foreground hover:text-foreground transition-colors min-h-[44px] underline-offset-4 hover:underline",
-                        to: Route::BlogList { },
-                        "Back to Home"
+                LayoutCell {
+                    padding: LayoutCellPadding::Normal,
+                    div { class: "py-10 sm:py-16 text-center",
+                        h1 { class: "text-xl sm:text-2xl lg:text-3xl font-semibold tracking-tight text-foreground mb-4 leading-tight", "Page Not Found" }
+                        p { class: "text-sm sm:text-base text-muted-foreground mb-6 max-w-md mx-auto", "Sorry, we couldn't find the page you're looking for." }
+                        Link {
+                            class: "inline-flex items-center justify-center px-2 py-2 text-sm sm:text-base font-medium text-muted-foreground hover:text-foreground transition-colors min-h-[44px] underline-offset-4 hover:underline",
+                            to: Route::BlogList { },
+                            "Back to Home"
+                        }
                     }
                 }
             }

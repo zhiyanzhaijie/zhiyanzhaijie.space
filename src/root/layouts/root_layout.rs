@@ -1,6 +1,6 @@
 use crate::{
-    components::providers::preference_provider::{resolve_locale, PreferenceContext},
     components::layout::root::{content::RootLayoutContent, sidebar::RootAsidebar},
+    components::providers::preference_provider::{resolve_locale, PreferenceContext},
     models::post::{get_available_languages_for_slug, get_post_by_slug_and_lang},
     root::Route,
     utils::markdown_toc::collect_toc_items,
@@ -43,17 +43,14 @@ pub fn RootLayout() -> Element {
     };
 
     rsx! {
-        div {
-            class: "min-h-screen bg-background text-foreground font-sans",
-            main {
-                class: "max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-10 relative z-10",
-                div {
-                    class: "flex items-start gap-8",
-                    RootAsidebar { current_route: current_route.clone() }
-                    RootLayoutContent {
-                        current_route: current_route,
-                        toc_items: toc_items,
-                    }
+        main {
+            class: "fixed inset-0 w-screen h-screen overflow-x-hidden overflow-y-auto bg-background text-foreground font-sans min-h-0",
+            div {
+                class: "relative w-full min-h-0 max-w-7xl mx-auto px-6 flex flex-col gap-4",
+                RootAsidebar { current_route: current_route.clone() }
+                RootLayoutContent {
+                    current_route: current_route,
+                    toc_items: toc_items,
                 }
             }
         }

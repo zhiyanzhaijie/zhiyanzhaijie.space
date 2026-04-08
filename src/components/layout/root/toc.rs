@@ -5,7 +5,7 @@ use dioxus::prelude::*;
 pub fn RootContentToc(toc_items: Vec<TocItem>) -> Element {
     rsx! {
         aside {
-            class: "w-52 shrink-0 sticky top-20",
+            class: "w-full text-right",
             div {
                 class: "space-y-2",
                 div { class: "text-xs text-muted-foreground", "On This Page" }
@@ -17,7 +17,7 @@ pub fn RootContentToc(toc_items: Vec<TocItem>) -> Element {
                             class: format!(
                                 "block text-xs transition-colors {}",
                                 if item.level >= 3 {
-                                    "pl-3 text-muted-foreground hover:text-foreground"
+                                    "pr-3 text-muted-foreground hover:text-foreground"
                                 } else {
                                     "text-muted-foreground hover:text-foreground"
                                 }
