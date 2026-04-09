@@ -2,6 +2,7 @@ pub mod layouts;
 mod routes;
 
 use crate::components::animated_bird::AnimatedBird;
+use crate::components::providers::interactive_provider::InteractiveProvider;
 use crate::components::providers::preference_provider::{
     locale_to_langid, resolve_locale, resolve_theme, PreferenceProvider,
 };
@@ -115,7 +116,9 @@ pub fn App() -> Element {
                 style: "background-image: url({NOISE_IMAGE}); background-size: 180px;",
             }
             AnimatedBird {}
-            Router::<Route> {}
+            InteractiveProvider {
+                Router::<Route> {}
+            }
         }
     }
 }

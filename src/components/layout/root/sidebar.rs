@@ -5,6 +5,7 @@ use crate::{
         svgs::{LogoSVG, MenuSVG},
         theme_switcher::ThemeSwitcher,
     },
+    components::providers::interactive_provider::InteractiveContext,
     root::Route,
 };
 use dioxus::prelude::*;
@@ -13,18 +14,25 @@ use dioxus_i18n::t;
 #[component]
 pub fn RootAsidebar(current_route: Route) -> Element {
     let mut is_mobile_nav_open = use_signal(|| false);
+    let interactive_context = use_context::<InteractiveContext>();
     let is_articles_route = matches!(
         current_route,
         Route::BlogList { .. } | Route::BlogPost { .. }
     );
+    let is_post_route = matches!(current_route, Route::BlogPost { .. });
     let is_tags_route = matches!(
         current_route,
         Route::TagList { .. } | Route::BlogByTag { .. }
     );
     let is_about_route = matches!(current_route, Route::About { .. });
+    let aside_focus_class = if is_post_route && (interactive_context.post_focus)() {
+        "opacity-15"
+    } else {
+        ""
+    };
     rsx! {
         aside {
-            class: "w-full md:w-56 shrink-0 md:fixed md:left-[max(1.5rem,calc((100vw-80rem)/2+1.5rem))] md:top-0 md:z-20",
+            class: "w-full md:w-56 shrink-0 md:fixed md:left-[max(1.5rem,calc((100vw-80rem)/2+1.5rem))] md:top-0 md:z-20 transition-opacity duration-200 {aside_focus_class}",
             LayoutCell {
                 padding: LayoutCellPadding::Normal,
                 div {
