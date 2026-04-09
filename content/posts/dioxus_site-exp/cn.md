@@ -1,16 +1,6 @@
----
-title: dioxus site experience
-date: 2025-06-11
-slug: dioxus_site-exp
-lang: en
-tags: ["dioxus"]
----
+## 这个网站是怎么工作的aa
 
-Hey there.
-
-## How this site work2
-
-Thanks to framework and works followed:
+本站由下列框架或工具支持:
 1. Dioxus (a cross-plateform ui framework writed in Rust)
 2. TailwindCSS + Iconify (easily use css tool and free icon web site)
 3. Markdown.rs (a md comparser writed in rust)
@@ -32,7 +22,7 @@ pub fn TestHear(label: String) -> Element {
     }
 }
 ```
-and there is the result：
+这是结果：
 <TestHear/>
 
 

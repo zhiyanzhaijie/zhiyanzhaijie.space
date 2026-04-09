@@ -50,9 +50,7 @@ pub fn ColorPickerComponent(initial_color: String) -> Element {
 
 pub fn registe_md_comp(components: &mut CustomComponents) {
     components.register("ColorPicker", |props| {
-        let initial_color = props
-            .get("color")
-            .unwrap_or_else(|| "#ff0000".to_string());
+        let initial_color = props.get("color").unwrap_or_else(|| "#ff0000".to_string());
         Ok(rsx! {
             ColorPickerComponent { initial_color }
         })

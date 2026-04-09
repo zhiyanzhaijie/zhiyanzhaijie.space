@@ -8,6 +8,7 @@ pub struct SessionPreferenceDto {
     pub locale: Option<String>,
     pub theme: Option<String>,
 }
+
 #[get("/api/user/preference", session: AppSession, seed: preference::PreferenceSeed)]
 pub async fn get_preference() -> ServerFnResult<SessionPreferenceDto> {
     Ok(SessionPreferenceDto {

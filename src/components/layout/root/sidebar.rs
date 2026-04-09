@@ -13,8 +13,14 @@ use dioxus_i18n::t;
 #[component]
 pub fn RootAsidebar(current_route: Route) -> Element {
     let mut is_mobile_nav_open = use_signal(|| false);
-    let is_articles_route = matches!(current_route, Route::BlogList { .. } | Route::BlogPost { .. });
-    let is_tags_route = matches!(current_route, Route::TagList { .. } | Route::BlogByTag { .. });
+    let is_articles_route = matches!(
+        current_route,
+        Route::BlogList { .. } | Route::BlogPost { .. }
+    );
+    let is_tags_route = matches!(
+        current_route,
+        Route::TagList { .. } | Route::BlogByTag { .. }
+    );
     let is_about_route = matches!(current_route, Route::About { .. });
     rsx! {
         aside {

@@ -2,7 +2,7 @@ use crate::utils::markdown_toc::TocItem;
 use dioxus::prelude::*;
 
 #[component]
-pub fn RootContentToc(toc_items: Vec<TocItem>) -> Element {
+fn RootContentTocInner(toc_items: Vec<TocItem>) -> Element {
     rsx! {
         aside {
             class: "w-full text-right",
@@ -28,5 +28,21 @@ pub fn RootContentToc(toc_items: Vec<TocItem>) -> Element {
                 }
             }
         }
+    }
+}
+#[component]
+pub fn RootContentToc(toc_items: Vec<TocItem>) -> Element {
+    let mut mounted = use_signal(|| false);
+
+    use_effect(move || {
+        mounted.set(true);
+    });
+
+    if !mounted() {
+        return rsx! {};
+    }
+
+    rsx! {
+        RootContentTocInner { toc_items }
     }
 }

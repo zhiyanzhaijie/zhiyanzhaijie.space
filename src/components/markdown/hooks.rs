@@ -1,6 +1,6 @@
+use crate::components::interactive::{code_runner, color_picker, counter, test};
 use dioxus::prelude::*;
 use dioxus_markdown::CustomComponents;
-use crate::components::interactive::{code_runner, color_picker, counter, test};
 
 pub fn use_markdown_components() -> ReadSignal<CustomComponents> {
     use_hook(move || {

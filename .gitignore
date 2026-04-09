@@ -12,10 +12,8 @@ LLM.*
 **/*TODO*
 
 package*
-*.css
-!tailwind.css
-!theme.css
 
+assets/tailwind.css
 
 # md ignore
 **/*.draft.md

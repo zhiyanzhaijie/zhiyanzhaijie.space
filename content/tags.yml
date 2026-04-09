@@ -1,0 +1,9 @@
+tags:
+  - id: resource
+    labels:
+      cn: 资料
+      en: Resource
+  - id: idea
+    labels:
+      cn: 想法
+      en: Idea

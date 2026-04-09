@@ -1,43 +1,29 @@
 use crate::components::common::layout_cell::{LayoutCell, LayoutCellPadding};
-use crate::models::post::get_all_posts;
-use crate::models::tag::Tag;
 use crate::components::providers::preference_provider::{resolve_locale, PreferenceContext};
 use crate::root::Route;
+use crate::IO::blog;
 use dioxus::prelude::*;
-use std::collections::HashMap;
 
 #[component]
 pub fn TagListView() -> Element {
     let preference = use_context::<PreferenceContext>();
-    let current_lang = resolve_locale(preference.read().locale.as_deref());
+    let tag_groups_fut = use_server_future(move || {
+        let current_lang = resolve_locale(preference.read().locale.as_deref()).to_string();
+        async move { blog::get_tag_groups(current_lang).await }
+    })?;
+    let posts_fut = use_server_future(move || {
+        let current_lang = resolve_locale(preference.read().locale.as_deref()).to_string();
+        async move { blog::get_posts_by_lang(current_lang).await }
+    })?;
 
-    let tag_posts = use_memo(move || {
-        let current_lang = resolve_locale(preference.read().locale.as_deref());
-
-        let posts = get_all_posts();
-        let mut posts_map: HashMap<Tag, Vec<crate::models::post::PostMetadata>> = HashMap::new();
-
-        for (post_meta, _) in posts.iter() {
-            if post_meta.lang == current_lang {
-                if let Some(tags) = &post_meta.tags {
-                    for tag in tags {
-                        posts_map
-                            .entry(tag.clone())
-                            .or_insert_with(Vec::new)
-                            .push(post_meta.clone());
-                    }
-                }
-            }
-        }
-
-        posts_map
-    });
-
-    let sorted_tags = use_memo(move || {
-        let mut tags: Vec<Tag> = tag_posts.read().keys().cloned().collect();
-        tags.sort_by(|a, b| a.to_string().cmp(&b.to_string()));
-        tags
-    });
+    let tag_groups = match tag_groups_fut() {
+        Some(Ok(groups)) => groups,
+        _ => Vec::new(),
+    };
+    let article_count = match posts_fut() {
+        Some(Ok(posts)) => posts.len(),
+        _ => 0,
+    };
 
     rsx! {
         LayoutCell {
@@ -52,15 +38,15 @@ pub fn TagListView() -> Element {
                     }
                     p {
                         class: "text-sm sm:text-base text-muted-foreground leading-relaxed",
-                        "{sorted_tags.read().len()} tags, {get_all_posts().iter().filter(|(meta, _)| meta.lang == current_lang).count()} articles"
+                        "{tag_groups.len()} tags, {article_count} articles"
                     }
                 }
 
-                {sorted_tags.read().iter().enumerate().map(|(index, tag)| {
-                    let binding = tag_posts.read();
-                    let posts = binding.get(tag).unwrap();
-                    let mut sorted_posts = posts.clone();
-                    sorted_posts.sort_by(|a, b| b.date.cmp(&a.date));
+                {tag_groups.iter().enumerate().map(|(index, group)| {
+                    let tag = group.tag.clone();
+                    let tag_id = tag.id.clone();
+                    let tag_label = tag.label.clone();
+                    let sorted_posts = group.posts.clone();
 
                     rsx! {
                         section {
@@ -70,10 +56,10 @@ pub fn TagListView() -> Element {
 
                             Link {
                                 class: "flex items-center space-x-2 sm:space-x-3",
-                                to: Route::BlogByTag { tag: tag.to_string() },
+                                to: Route::BlogByTag { tag: tag_id.clone() },
                                 h2 {
                                     class: "text-sm sm:text-base font-medium text-foreground hover:underline underline-offset-4",
-                                    "#{ tag.label_en() }"
+                                    "#{ tag_label }"
                                 }
                                 span {
                                     class: "flex-shrink-0 text-xs text-muted-foreground",

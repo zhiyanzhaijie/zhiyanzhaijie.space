@@ -1,8 +1,8 @@
+use crate::IO::user;
 use crate::{
     components::common::svgs::{MoonSVG, SunSVG},
     components::providers::preference_provider::{resolve_theme, PreferenceContext},
 };
-use crate::IO::user;
 use dioxus::prelude::*;
 use dioxus_use_js::use_js;
 

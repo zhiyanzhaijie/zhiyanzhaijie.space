@@ -1,46 +1,34 @@
 use crate::components::common::layout_cell::{LayoutCell, LayoutCellPadding};
 use crate::components::providers::preference_provider::{resolve_locale, PreferenceContext};
-use crate::models::post::get_all_posts;
 use crate::root::Route;
+use crate::IO::blog;
 use dioxus::prelude::*;
 
 #[component]
 pub fn BlogListView() -> Element {
     let preference = use_context::<PreferenceContext>();
-    let posts = use_memo(move || {
-        let current_lang = resolve_locale(preference.read().locale.as_deref());
+    let posts_fut = use_server_future(move || {
+        let current_lang = resolve_locale(preference.read().locale.as_deref()).to_string();
+        async move { blog::get_posts_by_lang(current_lang).await }
+    })?;
 
-        let all_posts = get_all_posts();
-
-        let mut filtered_posts: Vec<_> = all_posts
-            .into_iter()
-            .filter(|(meta, _)| meta.lang == current_lang)
-            .collect();
-
-        filtered_posts.sort_by(|a, b| {
-            use chrono::NaiveDate;
-            let date_a = NaiveDate::parse_from_str(&a.0.date, "%Y-%m-%d")
-                .unwrap_or_else(|_| NaiveDate::from_ymd_opt(1970, 1, 1).unwrap());
-            let date_b = NaiveDate::parse_from_str(&b.0.date, "%Y-%m-%d")
-                .unwrap_or_else(|_| NaiveDate::from_ymd_opt(1970, 1, 1).unwrap());
-            date_b.cmp(&date_a)
-        });
-
-        filtered_posts
-    });
+    let posts = match posts_fut() {
+        Some(Ok(posts)) => posts,
+        _ => Vec::new(),
+    };
 
     rsx! {
         LayoutCell {
             padding: LayoutCellPadding::Normal,
             div {
                 class: "space-y-1",
-                if posts().is_empty() {
+                if posts.is_empty() {
                     div {
                         class: "text-center py-12 text-muted-foreground",
                         "No articles available"
                     }
                 } else {
-                    {posts().iter().map(|(post_meta, _post_content)| {
+                    {posts.iter().map(|post_meta| {
                         let slug_clone = post_meta.slug.clone();
                         let title_clone = post_meta.title.clone();
                         let date_clone = post_meta.date.clone();
@@ -66,7 +54,7 @@ pub fn BlogListView() -> Element {
                                             Link {
                                                 to: Route::BlogByTag { tag: first_tag.to_string() },
                                                 class: "flex-shrink-0 text-xs text-muted-foreground hover:text-foreground transition-colors order-2",
-                                                "#{ first_tag.label_en() }"
+                                                "#{ first_tag.label }"
                                             }
                                         }
                                     }

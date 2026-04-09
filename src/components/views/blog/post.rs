@@ -1,10 +1,11 @@
 use crate::components::common::layout_cell::{LayoutCell, LayoutCellPadding};
+use crate::components::layout::root::toc::RootContentToc;
 use crate::components::markdown::hooks::use_markdown_components;
 use crate::components::markdown::renderer::MarkdownRenderer;
 use crate::components::providers::preference_provider::{resolve_locale, PreferenceContext};
-use crate::models::post::{get_available_languages_for_slug, get_post_by_slug_and_lang};
 use crate::root::Route;
 use crate::utils::markdown_toc::inject_heading_anchors_and_collect_toc;
+use crate::IO::blog;
 use dioxus::document::Stylesheet;
 use dioxus::prelude::*;
 const MARKDOWN_CSS: Asset = asset!("/assets/markdown.css");
@@ -13,30 +14,19 @@ const MARKDOWN_CSS: Asset = asset!("/assets/markdown.css");
 pub fn BlogPostView(slug: String) -> Element {
     let markdown_components = use_markdown_components();
     let preference = use_context::<PreferenceContext>();
+    let post_fut = use_server_future(move || {
+        let active_lang = resolve_locale(preference.read().locale.as_deref()).to_string();
+        let slug = slug.clone();
+        async move { blog::get_post_with_fallback(slug, active_lang).await }
+    })?;
 
-    let post = use_memo(move || {
-        let active_lang = resolve_locale(preference.read().locale.as_deref());
-
-        if let Some(post) = get_post_by_slug_and_lang(&slug, active_lang) {
-            return Some(post);
-        }
-
-        let available_languages = get_available_languages_for_slug(&slug);
-
-        let fallback_lang = if available_languages.contains(&"en".to_string()) {
-            "en"
-        } else if let Some(first_lang) = available_languages.first() {
-            first_lang.as_str()
-        } else {
-            return None;
-        };
-
-        get_post_by_slug_and_lang(&slug, fallback_lang)
-    });
-
-    match post() {
-        Some((meta, content)) => {
-            let (content_with_anchors, _) = inject_heading_anchors_and_collect_toc(&content);
+    match post_fut() {
+        Some(Ok(Some(post))) => {
+            let meta = post.meta;
+            let content = post.content;
+            let requested_locale = resolve_locale(preference.read().locale.as_deref()).to_string();
+            let markdown_key = format!("{}-{requested_locale}", meta.slug);
+            let (content_with_anchors, toc_items) = inject_heading_anchors_and_collect_toc(&content);
             rsx! {
                 LayoutCell {
                     padding: LayoutCellPadding::Normal,
@@ -64,16 +54,19 @@ pub fn BlogPostView(slug: String) -> Element {
                                     class: "flex flex-wrap gap-2 mt-3 sm:mt-4",
                                     for tag in tags.iter() {
                                         Link {
+                                            key: "{tag.id}",
                                             to: Route::BlogByTag { tag: tag.to_string() },
                                             class: "inline-flex items-center text-xs text-muted-foreground hover:text-foreground transition-colors",
-                                            "#{ tag.label_en() }"
+                                            "#{ tag.label }"
                                         }
                                     }
                                 }
                             }
                         }
 
-                        div { class: "prose prose-sm sm:prose-base lg:prose-lg max-w-none prose-slate dark:prose-invert",
+                        div {
+                            key: "{markdown_key}",
+                            class: "prose prose-sm sm:prose-base lg:prose-lg max-w-none prose-slate dark:prose-invert",
                             MarkdownRenderer {
                                 content: content_with_anchors.clone(),
                                 components: markdown_components,
@@ -90,10 +83,16 @@ pub fn BlogPostView(slug: String) -> Element {
                             }
                         }
                     }
+                    if !toc_items.is_empty() {
+                        div {
+                            class: "hidden lg:block fixed top-6 right-[max(1.5rem,calc((100vw-80rem)/2+1.5rem))] w-52 z-20",
+                            RootContentToc { toc_items: toc_items.clone() }
+                        }
+                    }
                 }
             }
         }
-        None => {
+        _ => {
             rsx! {
                 LayoutCell {
                     padding: LayoutCellPadding::Normal,

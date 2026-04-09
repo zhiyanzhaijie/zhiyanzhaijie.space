@@ -1,54 +1,38 @@
 use crate::components::common::layout_cell::{LayoutCell, LayoutCellPadding};
-use crate::models::post::get_all_posts;
-use crate::models::tag::Tag;
 use crate::components::providers::preference_provider::{resolve_locale, PreferenceContext};
 use crate::root::Route;
+use crate::IO::blog;
 use dioxus::prelude::*;
-use std::str::FromStr;
 
 #[component]
 pub fn BlogByTagView(tag: String) -> Element {
     let preference = use_context::<PreferenceContext>();
-    let current_lang = resolve_locale(preference.read().locale.as_deref());
+    let tag_id = tag.trim().to_lowercase();
+    let query_tag_id = tag_id.clone();
 
-    let posts = get_all_posts();
-    let tag_enum = match Tag::from_str(&tag) {
-        Ok(t) => t,
-        Err(_) => {
-            return rsx! {
-                LayoutCell {
-                    padding: LayoutCellPadding::Normal,
-                    div {
-                        class: "text-center py-8 sm:py-12 text-muted-foreground space-y-3",
-                        div {
-                            class: "text-sm sm:text-base",
-                            "Sorry, we couldn't find the page you're looking for."
-                        }
-                        Link {
-                            to: Route::TagList {},
-                            class: "inline-flex items-center text-sm text-primary hover:text-primary/80 transition-colors min-h-[44px] justify-center",
-                            "Back to Home"
-                        }
-                    }
-                }
-            };
-        }
+    let posts_fut = use_server_future(move || {
+        let current_lang = resolve_locale(preference.read().locale.as_deref()).to_string();
+        let tag = query_tag_id.clone();
+        async move { blog::get_posts_by_tag(tag, current_lang).await }
+    })?;
+
+    let sorted_posts = match posts_fut() {
+        Some(Ok(posts)) => posts,
+        _ => Vec::new(),
     };
-
-    let filtered_posts: Vec<_> = posts
+    let tag_label = sorted_posts
         .iter()
-        .filter(|(post_meta, _)| {
-            post_meta.lang == current_lang
-                && post_meta
-                    .tags
-                    .as_ref()
-                    .map(|tags| tags.contains(&tag_enum))
-                    .unwrap_or(false)
+        .find_map(|post_meta| {
+            post_meta
+                .tags
+                .as_ref()
+                .and_then(|tags| {
+                    tags.iter()
+                        .find(|item| item.id.as_str() == tag_id.as_str())
+                })
+                .map(|item| item.label.clone())
         })
-        .collect();
-
-    let mut sorted_posts = filtered_posts;
-    sorted_posts.sort_by(|(a, _), (b, _)| b.date.cmp(&a.date));
+        .unwrap_or_else(|| tag_id.clone());
 
     rsx! {
         LayoutCell {
@@ -67,15 +51,15 @@ pub fn BlogByTagView(tag: String) -> Element {
                             "Tag"
                         }
                         span { class: "mx-1 sm:mx-2", "/" }
-                        span { class: "text-foreground whitespace-nowrap", "{tag_enum.label_en()}" }
+                        span { class: "text-foreground whitespace-nowrap", "{tag_label}" }
                     }
                     h1 {
                         class: "text-xl sm:text-2xl font-semibold tracking-tight text-foreground mb-2 leading-tight",
-                        "Articles with \"{tag_enum.label_en()}\""
+                        "Articles with \"{tag_label}\""
                     }
                     p {
                         class: "text-sm sm:text-base text-muted-foreground leading-relaxed",
-                        "Related to {tag_enum.label_en()}"
+                        "Related to {tag_label}"
                     }
                 }
 
@@ -94,7 +78,7 @@ pub fn BlogByTagView(tag: String) -> Element {
                         }
                     }
                 } else {
-                    {sorted_posts.into_iter().map(|(post_meta, _post_content)| {
+                    {sorted_posts.into_iter().map(|post_meta| {
                         let slug_clone = post_meta.slug.clone();
                         let title_clone = post_meta.title.clone();
                         let date_clone = post_meta.date.clone();
@@ -116,15 +100,15 @@ pub fn BlogByTagView(tag: String) -> Element {
                                         div {
                                             class: "flex items-center space-x-1 flex-shrink-0 order-2",
                                             {tags.iter()
-                                                .filter(|t| *t != &tag_enum)
+                                                .filter(|tag| tag.id.as_str() != tag_id.as_str())
                                                 .take(2)
                                                 .map(|other_tag| rsx! {
                                                     Link {
                                                         key: "{other_tag}",
-                                                        to: Route::BlogByTag { tag: other_tag.to_string() },
+                                                        to: Route::BlogByTag { tag: other_tag.id.clone() },
                                                         class: "flex-shrink-0 text-xs text-muted-foreground hover:text-foreground transition-colors",
                                                         title: "View tag",
-                                                        "#{ other_tag.label_en() }"
+                                                        "#{ other_tag.label }"
                                                     }
                                                 })
                                             }

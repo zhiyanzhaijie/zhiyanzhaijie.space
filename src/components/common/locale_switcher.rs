@@ -1,5 +1,7 @@
 use crate::components::common::svgs::I18NSVG;
-use crate::components::providers::preference_provider::{locale_to_langid, resolve_locale, PreferenceContext};
+use crate::components::providers::preference_provider::{
+    locale_to_langid, resolve_locale, PreferenceContext,
+};
 use crate::IO::user;
 use dioxus::prelude::*;
 use dioxus_i18n::prelude::*;

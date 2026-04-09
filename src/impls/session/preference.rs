@@ -4,7 +4,9 @@ mod server {
     use axum::http::{request::Parts, HeaderMap};
     use dioxus::prelude::ServerFnError;
 
-    use crate::impls::session::consts::{SESSION_PREFERENCE_LOCALE_KEY, SESSION_PREFERENCE_THEME_KEY};
+    use crate::impls::session::consts::{
+        SESSION_PREFERENCE_LOCALE_KEY, SESSION_PREFERENCE_THEME_KEY,
+    };
     use crate::impls::session::AppSession;
 
     #[derive(Clone, Copy, Debug, PartialEq, Eq)]

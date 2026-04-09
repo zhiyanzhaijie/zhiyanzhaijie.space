@@ -1,5 +1,4 @@
 use dioxus::prelude::*;
-#[cfg(target_arch = "wasm32")]
 use gloo_timers::future::TimeoutFuture;
 use std::collections::HashMap;
 
@@ -53,12 +52,10 @@ fn manhattan_distance_to_center(
     ((row as i32 - center_row as i32).abs() + (col as i32 - center_col as i32).abs()) as usize
 }
 
-// Helper function to generate grid CSS classes
 fn get_grid_classes() -> &'static str {
     "grid-cols-8 grid-rows-8"
 }
 
-// Helper function to get grid position CSS classes
 fn get_grid_position_classes(row: usize, col: usize) -> String {
     let row_class = match row + 1 {
         1 => "row-start-1",
@@ -84,15 +81,16 @@ fn get_grid_position_classes(row: usize, col: usize) -> String {
         _ => "col-start-1",
     };
 
-    format!("{} {}", row_class, col_class)
+    format!("{row_class} {col_class}")
 }
 
 #[component]
-pub fn AnimatedBird() -> Element {
+fn AnimatedBirdInner() -> Element {
     let config = AnimationConfig::default();
     let mut animation_state = use_signal(|| AnimationState::Initial);
     let mut square_blocks = use_signal(|| Vec::<SquareBlock>::new());
     let bird_text = include_str!("../bird.txt");
+
     use_effect({
         move || {
             let lines: Vec<&str> = bird_text.lines().collect();
@@ -169,8 +167,8 @@ pub fn AnimatedBird() -> Element {
                     .or_insert_with(Vec::new)
                     .push(block);
             }
-            let mut final_blocks = Vec::new();
 
+            let mut final_blocks = Vec::new();
             let mut sorted_layers: Vec<_> = layers.into_iter().collect();
             sorted_layers.sort_by_key(|(layer, _)| *layer);
 
@@ -180,8 +178,7 @@ pub fn AnimatedBird() -> Element {
                 sorted_blocks.sort_by_key(|block| block.block_id);
 
                 for (block_index, mut block) in sorted_blocks.into_iter().enumerate() {
-                    block.delay =
-                        layer_base_delay + block_index as f32 * config.block_interval_seconds;
+                    block.delay = layer_base_delay + block_index as f32 * config.block_interval_seconds;
                     final_blocks.push(block);
                 }
             }
@@ -190,19 +187,13 @@ pub fn AnimatedBird() -> Element {
             square_blocks.set(final_blocks);
         }
     });
+
     use_effect({
         move || {
-            #[cfg(target_arch = "wasm32")]
             spawn(async move {
                 TimeoutFuture::new(config.initial_delay_ms).await;
                 animation_state.set(AnimationState::Animating);
             });
-
-            #[cfg(not(target_arch = "wasm32"))]
-            {
-                let _ = config.initial_delay_ms;
-                animation_state.set(AnimationState::Animating);
-            }
         }
     });
 
@@ -228,7 +219,6 @@ pub fn AnimatedBird() -> Element {
                             class: "whitespace-pre select-none will-change-[opacity]",
                             class: "{get_grid_position_classes(block.grid_row, block.grid_col)}",
                             style: {
-
                                 match current_state {
                                     AnimationState::Initial => "opacity: 0;".to_string(),
                                     AnimationState::Animating => format!(
@@ -244,4 +234,18 @@ pub fn AnimatedBird() -> Element {
             }
         }
     }
+}
+
+#[component]
+pub fn AnimatedBird() -> Element {
+    let mut mounted = use_signal(|| false);
+
+    use_effect(move || {
+        mounted.set(true);
+    });
+    if !mounted() {
+        return rsx! {};
+    }
+
+    rsx! { AnimatedBirdInner {} }
 }

@@ -4,7 +4,6 @@ mod IO;
 
 mod components;
 mod impls;
-mod models;
 mod root;
 mod utils;
 
