@@ -45,6 +45,41 @@ body {
   --foreground: var(--app-foreground);
 }
 
+@theme inline {
+  --color-background: var(--app-background);
+  --color-foreground: var(--app-foreground);
+  --color-card: var(--app-card);
+  --color-card-foreground: var(--app-card-foreground);
+  --color-popover: var(--app-popover);
+  --color-popover-foreground: var(--app-popover-foreground);
+  --color-primary: var(--app-primary);
+  --color-primary-foreground: var(--app-primary-foreground);
+  --color-secondary: var(--app-secondary);
+  --color-secondary-foreground: var(--app-secondary-foreground);
+  --color-muted: var(--app-muted);
+  --color-muted-foreground: var(--app-muted-foreground);
+  --color-accent: var(--app-accent);
+  --color-accent-foreground: var(--app-accent-foreground);
+  --color-destructive: var(--app-destructive);
+  --color-destructive-foreground: var(--app-destructive-foreground);
+  --color-border: var(--app-border);
+  --color-input: var(--app-input);
+  --color-ring: var(--app-ring);
+  --color-chart-1: var(--app-chart-1);
+  --color-chart-2: var(--app-chart-2);
+  --color-chart-3: var(--app-chart-3);
+  --color-chart-4: var(--app-chart-4);
+  --color-chart-5: var(--app-chart-5);
+  --color-sidebar: var(--app-sidebar);
+  --color-sidebar-foreground: var(--app-sidebar-foreground);
+  --color-sidebar-primary: var(--app-sidebar-primary);
+  --color-sidebar-primary-foreground: var(--app-sidebar-primary-foreground);
+  --color-sidebar-accent: var(--app-sidebar-accent);
+  --color-sidebar-accent-foreground: var(--app-sidebar-accent-foreground);
+  --color-sidebar-border: var(--app-sidebar-border);
+  --color-sidebar-ring: var(--app-sidebar-ring);
+}
+
 :root.dark {
   --app-background: hsl(220, 13%, 7.5%);
   --app-foreground: hsl(220, 14%, 70%);
