@@ -2,12 +2,26 @@ use dioxus::prelude::*;
 use unic_langid::{langid, LanguageIdentifier};
 
 use crate::IO::user::SessionPreferenceDto;
+#[derive(Clone, Store)]
+pub struct PreferenceStore {
+    pub locale: Option<String>,
+    pub theme: Option<String>,
+}
 
-pub type PreferenceContext = Signal<SessionPreferenceDto>;
+impl From<SessionPreferenceDto> for PreferenceStore {
+    fn from(value: SessionPreferenceDto) -> Self {
+        Self {
+            locale: value.locale,
+            theme: value.theme,
+        }
+    }
+}
+
+pub type PreferenceContext = Store<PreferenceStore>;
 
 #[component]
 pub fn PreferenceProvider(initial: SessionPreferenceDto, children: Element) -> Element {
-    let preference: PreferenceContext = use_signal(|| initial.clone());
+    let preference: PreferenceContext = use_store(|| initial.clone().into());
     use_context_provider(|| preference);
 
     children

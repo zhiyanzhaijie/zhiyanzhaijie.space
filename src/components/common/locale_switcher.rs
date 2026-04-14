@@ -1,6 +1,6 @@
-use crate::components::common::svgs::I18NSVG;
+use crate::components::icons::I18NIcon;
 use crate::components::providers::preference_provider::{
-    locale_to_langid, resolve_locale, PreferenceContext,
+    locale_to_langid, resolve_locale, PreferenceContext, PreferenceStoreStoreExt,
 };
 use crate::IO::user;
 use dioxus::prelude::*;
@@ -10,9 +10,10 @@ use dioxus_use_js::use_js;
 use_js!("src/js/theme_bridge.js"::js_apply_lang);
 
 #[component]
-pub fn LocaleSwitcher() -> Element {
-    let mut preference = use_context::<PreferenceContext>();
-    let current_locale = resolve_locale(preference.read().locale.as_deref());
+pub fn LocaleSwitcher(#[props(default = false)] compact: bool) -> Element {
+    let preference = use_context::<PreferenceContext>();
+    let mut locale = preference.locale();
+    let current_locale = resolve_locale(locale.read().as_deref());
     let mut i18n = i18n();
     let (locale_to_set_on_click, title_for_button) = if current_locale == "en" {
         ("cn", "Switch to Chinese")
@@ -27,9 +28,7 @@ pub fn LocaleSwitcher() -> Element {
     });
 
     let handle_locale_toggle = move |_| {
-        preference.with_mut(|state| {
-            state.locale = Some(locale_to_set_on_click.to_string());
-        });
+        locale.set(Some(locale_to_set_on_click.to_string()));
         i18n.set_language(locale_to_langid(Some(locale_to_set_on_click)));
         let next_locale = locale_to_set_on_click.to_string();
         spawn(async move {
@@ -48,12 +47,17 @@ pub fn LocaleSwitcher() -> Element {
         div {
             class: "locale-switcher flex items-center justify-center",
             button {
-                class: "w-8 h-8 flex items-center justify-center rounded focus:outline-none cursor-pointer text-muted-foreground hover:text-foreground transition-colors",
+                class: if compact {
+                    "w-5 h-5 flex items-center justify-center focus:outline-none cursor-pointer text-muted-foreground opacity-50 hover:text-foreground hover:opacity-100 transition-colors transition-opacity duration-200"
+                } else {
+                    "w-8 h-8 flex items-center justify-center rounded focus:outline-none cursor-pointer text-muted-foreground opacity-50 hover:text-foreground hover:opacity-100 transition-colors transition-opacity duration-200"
+                },
                 onclick: handle_locale_toggle,
                 title: "{title_for_button}",
-                div {
-                    class: "scale-[70%]",
-                    I18NSVG { lang: current_locale.to_string() }
+                if compact {
+                    I18NIcon { lang: current_locale.to_string(), class: "w-3.5 h-3.5" }
+                } else {
+                    I18NIcon { lang: current_locale.to_string(), class: "w-4 h-4" }
                 }
             }
         }

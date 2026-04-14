@@ -1,5 +1,5 @@
 use crate::{
-    components::layout::root::{content::RootLayoutContent, sidebar::RootAsidebar},
+    components::layout::root::{bottom_bar::RootBottomBar, sidebar::RootAsidebar},
     root::Route,
 };
 use dioxus::prelude::*;
@@ -10,13 +10,24 @@ pub fn RootLayout() -> Element {
 
     rsx! {
         main {
-            class: "fixed inset-0 w-screen h-screen overflow-x-hidden overflow-y-auto bg-background text-foreground font-sans min-h-0",
+            class: "fixed inset-0 w-screen h-screen overflow-hidden overscroll-none text-foreground font-sans min-h-0",
             div {
-                class: "relative w-full min-h-0 max-w-7xl mx-auto px-6 flex flex-col gap-4",
+                class: "relative w-full h-full min-h-0 mx-auto overflow-hidden flex flex-col",
                 RootAsidebar { current_route: current_route.clone() }
-                RootLayoutContent {
-                    current_route: current_route,
+                section {
+                    class: "relative w-full min-w-0 text-muted-foreground flex-1 min-h-0 overflow-y-auto px-6 mb-8",
+                    div {
+                        class: "w-full",
+                        div {
+                            class: "w-full min-w-0 max-w-[65ch] mx-auto",
+                            SuspenseBoundary {
+                                fallback: |_| rsx! {},
+                                Outlet::<Route> {}
+                            }
+                        }
+                    }
                 }
+                RootBottomBar {}
             }
         }
     }

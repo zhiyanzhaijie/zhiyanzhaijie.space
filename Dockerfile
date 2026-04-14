@@ -1,53 +1,34 @@
-ARG DIOXUS_CLI_VERSION="0.6.3"
-ARG CARGO_CHEF_VERSION="0.1.71"
+FROM rust:1-bookworm AS chef
 
-
-# --- Stage 1: Rust Tools Installation ---
-FROM rust:1 AS rust_tools
-ARG DIOXUS_CLI_VERSION
-ARG CARGO_CHEF_VERSION
-
-RUN cargo install cargo-chef --version ${CARGO_CHEF_VERSION} --locked --root /.
-RUN cargo install dioxus-cli --version ${DIOXUS_CLI_VERSION} --root /.cargo --force
-ENV PATH="/.cargo/bin:${PATH}"
-
-# --- Stage 2: Chef Planner ---
-FROM rust_tools AS planner
+RUN curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+RUN cargo binstall cargo-chef --no-confirm
+RUN cargo binstall dioxus-cli@0.7.5 --target x86_64-unknown-linux-musl --no-confirm \
+    || cargo install --locked dioxus-cli --version 0.7.5
 WORKDIR /app
+
+FROM chef AS planner
 COPY . .
 RUN cargo chef prepare --recipe-path recipe.json
 
-# --- Stage 3: Application Builder ---
-FROM rust_tools AS builder
-WORKDIR /app
+FROM chef AS builder
 COPY --from=planner /app/recipe.json recipe.json
 RUN cargo chef cook --release --recipe-path recipe.json
 COPY . .
 
-RUN dx bundle --platform web
+RUN dx bundle --release --fullstack --ssg --force-sequential
 
-FROM nginx:alpine AS runtime
-COPY --from=builder /app/target/dx/zhiyanzhaijie-space/release/web/public /usr/share/nginx/html/
+FROM debian:bookworm-slim AS runtime
+WORKDIR /app
 
-# 添加 SPA 路由配置
-RUN echo 'server { \
-  listen 80; \
-  server_name localhost; \
-  root /usr/share/nginx/html; \
-  index index.html; \
-  \
-  # SPA 路由配置 - 关键部分 \
-  location / { \
-  try_files $uri $uri/ /index.html; \
-  } \
-  \
-  location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ { \
-  expires 1y; \
-  add_header Cache-Control "public, immutable"; \
-  try_files $uri =404; \
-  } \
-  }' > /etc/nginx/conf.d/default.conf
+ENV IP=0.0.0.0
+ENV PORT=8080
 
-ENV PORT=80
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /app/target/dx/zhiyanzhaijie-space/release/web/server ./server
+COPY --from=builder /app/target/dx/zhiyanzhaijie-space/release/web/public ./public
+COPY --from=builder /app/content ./content
+
+ENTRYPOINT ["./server"]

@@ -1,0 +1,21 @@
+pub mod copy;
+pub mod github;
+pub mod i18n;
+pub mod linkedin;
+pub mod logo;
+pub mod menu;
+pub mod moon;
+pub mod sun;
+pub mod twitter;
+pub mod zyzj;
+
+pub use copy::CopyIcon;
+pub use github::GithubIcon;
+pub use i18n::I18NIcon;
+pub use linkedin::LinkedinIcon;
+pub use logo::LogoIcon;
+pub use menu::MenuIcon;
+pub use moon::MoonIcon;
+pub use sun::SunIcon;
+pub use twitter::TwitterIcon;
+pub use zyzj::ZyzjIcon;

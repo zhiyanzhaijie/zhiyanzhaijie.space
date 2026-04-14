@@ -13,15 +13,15 @@ pub fn NotFoundView(route: Vec<String>) -> Element {
                 div {
                     class: "mb-6 sm:mb-8",
                     h1 {
-                        class: "text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight text-foreground mb-3 sm:mb-4",
+                        class: "text-xl sm:text-2xl font-semibold tracking-tight text-foreground mb-2 leading-tight",
                         "404"
                     }
                     h2 {
-                        class: "text-xl sm:text-2xl lg:text-3xl font-semibold tracking-tight text-foreground mb-3 sm:mb-4 leading-tight",
+                        class: "text-xl sm:text-2xl font-semibold tracking-tight text-foreground mb-2 leading-tight",
                         "Page Not Found"
                     }
                     p {
-                        class: "text-sm sm:text-base lg:text-lg text-muted-foreground leading-relaxed mb-6",
+                        class: "text-sm sm:text-base text-muted-foreground leading-relaxed mb-6",
                         "Sorry, we couldn't find the page you're looking for."
                     }
 
@@ -29,11 +29,11 @@ pub fn NotFoundView(route: Vec<String>) -> Element {
                         div {
                             class: "mb-6 text-left",
                             p {
-                                class: "text-xs sm:text-sm text-muted-foreground mb-2",
+                                class: "text-sm text-muted-foreground mb-2",
                                 "Attempted path:"
                             }
                             code {
-                                class: "text-foreground font-mono text-xs sm:text-sm break-all",
+                                class: "text-foreground font-mono text-sm break-all",
                                 "/{route.join(\"/\")}"
                             }
                         }

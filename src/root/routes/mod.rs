@@ -1,18 +1,14 @@
 mod about;
-mod blog_by_tag;
-mod blog_list;
-mod blog_post;
+mod blog;
 mod not_found;
 mod tags;
 
 use super::layouts::{BlogLayout, RootLayout};
 use about::About;
-use blog_by_tag::BlogByTag;
-use blog_list::BlogList;
-use blog_post::BlogPost;
+use blog::{BlogList, BlogPost};
 use dioxus::prelude::*;
 use not_found::PageNotFound;
-use tags::TagList;
+use tags::{TagList, TagsTag};
 
 #[derive(Routable, Clone, PartialEq)]
 #[rustfmt::skip]
@@ -27,14 +23,14 @@ pub enum Route {
           #[route("/")]
           TagList {},
           #[route("/:tag")]
-          BlogByTag { tag: String },
+          TagsTag { tag: String },
         #[end_nest]
 
         #[nest("/blog")]
             #[layout(BlogLayout)]
                 #[route("/")]
                 BlogList {},
-                #[route("/post/:slug")]
+                #[route("/:slug")]
                 BlogPost { slug: String },
             #[end_layout]
         #[end_nest]

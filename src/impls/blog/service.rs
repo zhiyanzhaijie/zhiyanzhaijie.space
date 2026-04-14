@@ -146,7 +146,7 @@ pub fn get_static_routes() -> Vec<String> {
     }
 
     for slug in slugs {
-        routes.insert(format!("/blog/post/{slug}"));
+        routes.insert(format!("/blog/{slug}"));
     }
 
     for tag in tags {

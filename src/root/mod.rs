@@ -17,7 +17,9 @@ pub use routes::Route;
 const FAVICON: Asset = asset!("/assets/favicon.ico");
 const TW_STYLES: Asset = asset!("/assets/tailwind.css");
 const FONT_CSS: Asset = asset!("/assets/font.css");
+const MARKDOWN_CSS: Asset = asset!("/assets/markdown.css");
 const NOISE_IMAGE: Asset = asset!("/assets/noise.png");
+const MERMAID_JS_CDN: &str = "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js";
 const IA_WRITER_QUATTRO_REGULAR: Asset = asset!(
     "/assets/fonts/iAWriterQuattroS-Regular.woff2",
     AssetOptions::builder()
@@ -85,6 +87,7 @@ pub fn App() -> Element {
 
     rsx! {
         document::Script { {bootstrap_script} }
+        document::Script { src: MERMAID_JS_CDN }
         Link {
             rel: "preload",
             href: IA_WRITER_QUATTRO_REGULAR,
@@ -110,6 +113,7 @@ pub fn App() -> Element {
         Link { rel: "icon", href: FAVICON }
         Stylesheet { href: TW_STYLES }
         Stylesheet { href: FONT_CSS }
+        Stylesheet { href: MARKDOWN_CSS }
         PreferenceProvider { initial: initial_preference,
             div {
                 class: "pointer-events-none fixed inset-0 bg-repeat opacity-[0.035] dark:opacity-[0.020]",
