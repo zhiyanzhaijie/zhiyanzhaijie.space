@@ -19,6 +19,15 @@ pub fn MermaidComponent(content: Option<String>, children: Element) -> Element {
     let base_id = use_hook(next_mermaid_base_id);
     let source_id = format!("{base_id}-src");
     let output_id = format!("{base_id}-out");
+    let mut mounted = use_signal(|| false);
+
+    use_effect(move || {
+        mounted.set(true);
+    });
+
+    if !mounted() {
+        return rsx! {};
+    }
 
     use_effect(move || {
         let base_id = base_id.clone();
@@ -32,7 +41,7 @@ pub fn MermaidComponent(content: Option<String>, children: Element) -> Element {
             div {
                 id: "{source_id}",
                 style: "display:none;",
-                if let Some(content) = content {
+                if let Some(ref content) = content {
                     "{content}"
                 } else {
                     {children}
