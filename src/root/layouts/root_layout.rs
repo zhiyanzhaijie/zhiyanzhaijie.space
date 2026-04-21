@@ -15,6 +15,7 @@ pub fn RootLayout() -> Element {
                 class: "relative w-full h-full min-h-0 mx-auto overflow-hidden flex flex-col",
                 RootAsidebar { current_route: current_route.clone() }
                 section {
+                    id: "content-scroll-root",
                     class: "relative w-full min-w-0 text-muted-foreground flex-1 min-h-0 overflow-y-auto px-6 mb-8",
                     div {
                         class: "w-full",

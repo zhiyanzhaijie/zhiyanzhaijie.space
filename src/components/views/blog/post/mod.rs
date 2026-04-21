@@ -86,9 +86,9 @@ pub fn BlogPostView(slug: String) -> Element {
                         }
                         if !toc_items.is_empty() {
                             div {
-                                class: "hidden lg:block fixed top-4 bottom-4 left-[calc(50%+32.5ch)] right-0 z-20",
+                                class: "hidden lg:block fixed top-4 bottom-4 left-0 right-[calc(50%+32.5ch)] z-20",
                                 div {
-                                    class: "h-full pl-4 pr-6",
+                                    class: "h-full pl-6 pr-4",
                                     RootContentToc { toc_items: toc_items.clone() }
                                 }
                             }
