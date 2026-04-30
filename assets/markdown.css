@@ -54,7 +54,34 @@
 
 .markdown-body ul,
 .markdown-body ol {
-  padding-left: 1.2em;
+  padding-left: 1.5em;
+  list-style-position: outside;
+}
+
+.markdown-body ul li::marker,
+.markdown-body ol li::marker {
+  font-size: 0.75em;
+  color: color-mix(in oklab, var(--app-foreground) 35%, transparent);
+}
+
+.markdown-body ul {
+  list-style-type: disc;
+}
+
+.markdown-body ul ul {
+  list-style-type: circle;
+}
+
+.markdown-body ul ul ul {
+  list-style-type: square;
+}
+
+.markdown-body ol {
+  list-style-type: decimal;
+}
+
+.markdown-body ol ol {
+  list-style-type: lower-alpha;
 }
 
 .markdown-body li+li {
@@ -75,9 +102,18 @@
 }
 
 .markdown-body blockquote {
-  margin-block: calc(var(--spacing) * 4);
-  padding-left: calc(var(--spacing) * 4);
+  margin-block: calc(var(--spacing) * 6);
+  padding: calc(var(--spacing) * 3) calc(var(--spacing) * 4);
+  border-left: 2px solid color-mix(in oklab, var(--app-primary) 45%, transparent);
+  background-color: color-mix(in oklab, var(--app-primary) 5%, transparent);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
   color: var(--app-muted-foreground);
+  font-style: italic;
+  font-size: 0.9em;
+}
+
+.markdown-body blockquote p+p {
+  margin-top: calc(var(--spacing) * 3);
 }
 
 .markdown-body hr {

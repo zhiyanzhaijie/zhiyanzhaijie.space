@@ -41,10 +41,10 @@ fn RootContentTocInner(toc_items: Vec<TocItem>) -> Element {
                             "data-toc-id": "{item.id}",
                             class: format!(
                                 "block text-xs leading-5 transition-colors transition-opacity opacity-65 hover:opacity-100 {}",
-                                if item.level >= 3 {
-                                    "pl-3 text-muted-foreground hover:text-foreground"
-                                } else {
-                                    "text-muted-foreground hover:text-foreground"
+                                match item.level {
+                                    4 => "pl-6 text-[11px] text-muted-foreground/80 hover:text-foreground",
+                                    3 => "pl-3 text-muted-foreground hover:text-foreground",
+                                    _ => "text-muted-foreground hover:text-foreground",
                                 }
                             ),
                             "{item.title}"
