@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use dioxus::fullstack::{FileStream, Redirect};
 
 #[cfg(feature = "server")]
 use crate::impls::blog;
@@ -32,6 +33,16 @@ pub async fn get_post_content_with_fallback(
 #[get("/api/blog/post_languages/:slug")]
 pub async fn get_post_languages(slug: String) -> ServerFnResult<Vec<String>> {
     Ok(blog::get_available_languages_for_slug(&slug))
+}
+
+#[get("/blog/:slug/:file")]
+pub async fn get_post_asset(slug: String, file: String) -> ServerFnResult<FileStream> {
+    Ok(blog::get_post_asset(&slug, &file).await?)
+}
+
+#[get("/blog/:slug")]
+pub async fn redirect_blog_post_to_directory(slug: String) -> ServerFnResult<Redirect> {
+    Ok(Redirect::temporary(&format!("/blog/{slug}/")))
 }
 
 #[get("/api/blog/tag_posts/:tag/:lang")]

@@ -30,7 +30,8 @@ pub enum Route {
             #[layout(BlogLayout)]
                 #[route("/")]
                 BlogList {},
-                #[route("/:slug")]
+                #[redirect("/:slug", |slug: String| Route::BlogPost { slug })]
+                #[route("/:slug/")]
                 BlogPost { slug: String },
             #[end_layout]
         #[end_nest]

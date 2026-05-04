@@ -1,3 +1,4 @@
+use crate::impls::blog::types::{Post, PostMetadata, Tag, TagDefinition};
 use chrono::NaiveDate;
 use serde::Deserialize;
 use std::collections::hash_map::DefaultHasher;
@@ -7,7 +8,6 @@ use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 use std::sync::{OnceLock, RwLock};
 use std::time::UNIX_EPOCH;
-use crate::impls::blog::types::{Post, PostMetadata, Tag, TagDefinition};
 
 const POSTS_ROOT: &str = "content/posts";
 const TAGS_PATH: &str = "content/tags.yml";

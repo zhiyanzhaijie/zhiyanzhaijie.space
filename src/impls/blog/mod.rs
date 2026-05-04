@@ -1,9 +1,13 @@
 #[cfg(feature = "server")]
+mod assets;
+#[cfg(feature = "server")]
 mod service;
 #[cfg(feature = "server")]
 mod store;
 mod types;
 
+#[cfg(feature = "server")]
+pub use assets::get_post_asset;
 #[cfg(feature = "server")]
 pub use service::{
     get_available_languages_for_slug, get_post_by_slug_and_lang, get_post_content_with_fallback,
