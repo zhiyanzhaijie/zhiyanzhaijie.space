@@ -1,5 +1,5 @@
-use dioxus::prelude::*;
 use dioxus::fullstack::{FileStream, Redirect};
+use dioxus::prelude::*;
 
 #[cfg(feature = "server")]
 use crate::impls::blog;
@@ -35,7 +35,7 @@ pub async fn get_post_languages(slug: String) -> ServerFnResult<Vec<String>> {
     Ok(blog::get_available_languages_for_slug(&slug))
 }
 
-#[get("/blog/:slug/:file")]
+#[get("/blog/:slug/img/:file")]
 pub async fn get_post_asset(slug: String, file: String) -> ServerFnResult<FileStream> {
     Ok(blog::get_post_asset(&slug, &file).await?)
 }

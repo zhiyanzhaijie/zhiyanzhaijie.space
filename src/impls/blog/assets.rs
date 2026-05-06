@@ -9,7 +9,9 @@ pub async fn get_post_asset(slug: &str, file: &str) -> Result<FileStream, Server
         return Err(not_found());
     }
 
-    let path = PathBuf::from(POSTS_ROOT).join(slug).join(file);
+    let path = PathBuf::from(POSTS_ROOT)
+        .join(slug)
+        .join(format!("img/{file}"));
     FileStream::from_path(path).await.map_err(|_| not_found())
 }
 
