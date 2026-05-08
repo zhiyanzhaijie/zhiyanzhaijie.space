@@ -119,10 +119,10 @@ $$
 
 #### Q、K、V
 
-式子中，被Attention函数包裹的是$Q\quadK\quadV$，而Attention要操作的是输入矩阵$X$, 所以QKV和X必然存在关联。
-实际上，QKV代表的, 正是模型使用它在训练中习得的**权重经验$W$**从三个角度对源句矩阵$X$进行投影所得的具有特殊目的矩阵——权重矩阵。
+式子中，被Attention函数包裹的是$QKV$，而Attention要操作的是输入矩阵$X$, 所以$QKV$和$X$必然存在关联。
+实际上，QKV代表的, 正是模型使用它在训练中习得的**权重经验**从三个角度对源句矩阵$X$进行投影所得的具有特殊目的矩阵——`权重矩阵`。
 
-权重矩阵通常称为 $W$，像一份被反复打磨过的舞台剧本；每个 token 都是一个演员，它一开始只知道自己拿到的剧本内容，整出戏是否完美（语义是否完美），要靠它和其余演员充分**对戏**。
+权重矩阵通常称为 $W$，像一份被反复打磨过的`"舞台剧本"`；每个 token 都是一个演员，它一开始只知道自己拿到的剧本内容，整出戏是否完美（语义是否完美），要靠它和其余演员充分**对戏**。
 
 到了 Self-Attention 这里，这份“剧本”分成三部分：$W^Q,W^K,W^V$。它们不是输入句子的一部分，而是模型训练后留下来的参数。输入表示矩阵 $X$ 每进入一层，都会按这三组参数生成对应的 $Q,K,V$ 矩阵。
 
@@ -336,10 +336,11 @@ $$
 因为本文采用 token-as-row 写法，所以计算 $love$ 对 $I$ 的注意力打分时，是把 $k_I$ 转置成列向量，放在 $q_{love}$ 的右侧：
 
 $$
-\begin{aligned}
-\text{Score}_{love,I}
-&=q_{love}k_I^\top\\
-&=
+\text{Score}_{love,I}=q_{love}k_I^\top
+$$
+
+$$
+q_{love}k_I^\top=
 \begin{bmatrix}
 0.55 & 0.78 & 1.55
 \end{bmatrix}
@@ -347,16 +348,21 @@ $$
 0.422\\
 0.227\\
 0.100
-\end{bmatrix}\\
-&=
+\end{bmatrix}
+$$
+
+$$
+=
 \begin{bmatrix}
 0.55\times0.422+0.78\times0.227+1.55\times0.100
-\end{bmatrix}\\
-&=
+\end{bmatrix}
+$$
+
+$$
+=
 \begin{bmatrix}
 0.564
 \end{bmatrix}
-\end{aligned}
 $$
 
 <Mermaid>
@@ -604,11 +610,9 @@ flowchart LR
 矩阵上可以理解成：
 
 $$
-\begin{aligned}
 \text{MaskedAttention}(Q_Y,K_Y,V_Y)
-&=
+=
 \text{softmax}\left(\frac{Q_YK_Y^\top+M}{\sqrt{d_k}}\right)V_Y
-\end{aligned}
 $$
 
 其中 $M$ 是 mask 矩阵。允许看的地方是 $0$，不允许看的未来位置是 $-\infty$。这样 softmax 之后，未来位置的概率就会变成 0。
@@ -670,8 +674,7 @@ flowchart LR
 公式仍然是熟悉的 Attention：
 
 $$
-\text{CrossAttention}(Q,K,V)
-=
+\text{CrossAttention}(Q,K,V)=
 \text{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}\right)V
 $$
 
@@ -825,9 +828,9 @@ flowchart LR
 
 ### 1) 深度学习为什么喜欢大模型
 
-深度学习里有一个很朴素但很重要的经验：在数据足够、训练足够稳定的前提下，模型规模越大，通常效果越好。
+深度学习里有一个很朴素经验：在数据足够、训练足够稳定的前提下，模型规模越大，通常效果越好。
 
-这里的“大”，不只是参数更多，而是整体能力变强：
+这里的“大”是指：
 
 - 层数更深，可以做更多轮抽象
 - 隐藏维度更宽，可以容纳更丰富的语义
@@ -839,7 +842,6 @@ Transformer 正好非常适合做这些扩展。
 前面说过，一个 Transformer Block 大致由 Self-Attention、Add & Norm、FFN 组成。其中真正吃参数的大头，往往不是 Attention，而是 FFN。
 
 典型 FFN 是：
-
 $$
 \text{FFN}(x)=\sigma(xW_1+b_1)W_2+b_2
 $$
@@ -864,7 +866,7 @@ flowchart LR
   Heads --> Big
 </Mermaid>
 
-但“能变大”不等于“变大后还能训练”。Transformer 能撑住规模，靠的是几个结构配合：
+但“能变大”不等于“变大后还能训练”。Transformer 能撑住规模，基于一下：
 
 - 残差连接让信息有捷径可走，深层时不容易断
 - LayerNorm 稳定每层输入输出的分布
@@ -877,9 +879,7 @@ flowchart LR
 
 ### 2) Transformer 为什么适合 GPU
 
-GPU 最擅长什么？
-
-不是一个个按顺序做小计算，而是同时做大量相似的矩阵运算。
+GPU 擅长什么并行计算？
 
 RNN 类模型的问题在于，它天然有时间顺序依赖。要算第 $t$ 个位置，往往得先算完第 $t-1$ 个位置：
 
@@ -948,7 +948,7 @@ flowchart TD
   GPU --> Head["multi-head 并行"]
 </Mermaid>
 
-这就是为什么 Transformer 和现代 GPU 的关系非常紧密。它不是只是“算法好”，而是它的计算形态刚好对上了硬件擅长的方向。
+Transformer贴合GPU并行优势。它不只是“算法好”，而是它的计算形态能够充分发挥硬件优势, 吕布骑上了赤兔。
 
 ### 3) 计算量优势到底在哪里
 
@@ -1016,7 +1016,7 @@ flowchart LR
 
 Transformer 之所以成为主流，不只是因为 Attention 这个想法漂亮，而是因为它同时满足了三个条件：
 
-1. 表达能力强：Self-Attention 负责全局通信，FFN 负责大规模非线性加工
+1. 结构清晰：Attention + MLP
 2. 可扩展：宽度、深度、head 数、FFN 维度都能继续放大
 3. 硬件友好：核心计算是大规模矩阵乘法，能吃满 GPU 并发
 
