@@ -7,7 +7,6 @@ Transformer架构登场于Google的Attention is all you need论文里，是Machi
 
 所以，我将Transformer视作翻译机。
 请看下面的迷你架构图：
-<!-- Mermaid - 迷你架构 -->
 
 <Mermaid>
 flowchart LR
@@ -20,17 +19,17 @@ flowchart LR
 
 图中，原先的句子先是被encoder处理成中间态的语义上下文，decoder再据上下文，逐字（**自回归**）地生成一个结果句。
 
-整个过程是一个翻译行为。所以，理解经典Transformer之前，得先理解翻译本身。
+整个过程是一个翻译行为。要理解经典Transformer之前，代表着我们需要理解翻译行为本身。
 
 --- 
 ## 翻译的难点
 
-在现实物理世界里，我将翻译行为分为两步：
+物理世界里，翻译行为可以分为两步：
 
-1. 译者收到原信息，结合自身知识**理解**上下文，并暂存上下文
+1. 译者收到原信息，结合自身知识**理解**上下文，并暂存消化后上下文
 2. 译者根据上下文陈述
 
-实际上，Transformer也是这样子做的。Encoder对应第一步，Decoder对应第二步。
+Transformer也是这样子做的。Encoder对应第一步，Decoder对应第二步。
 不过, 机器过程没有人类逻辑复杂，我们早已习惯翻译，胆子大点，来理一理机器过程吧。
 
 看起来只有两个步骤，而难点在于——要怎么实现呢？
@@ -91,8 +90,13 @@ X =
 \end{matrix}
 $$
 
-几何视角上，这就是 4 个漂浮在 6 维空间里的点。它们现在还比较“孤立”：$I$ 只是I，$love$ 只是love，$dog$ 也还只是词典意义上的dog。
-如何让这6各点互相分享信息，各自影响，最终为矩阵增加语义, 这是下一步Attention要做的事情。
+几何视角上，这就是 4 个漂浮在 6 维空间里的点。它们现在是“孤立”的, 只有词义，没有句义：$I$ 只是I，$love$ 只是love，$dog$ 也还只是词典意义上的dog。
+如何让这4个词互相分享信息，各自影响(表现为向量修正), 这是下一步Attention要做的事情。
+
+#### Position Embedding 位置编码
+
+前面只完成了原词义向量化任务，第三步还需要在结果向量中携带每个token位于源句的位置信息。
+这里边会用到位置编码，有了位置信息，才能确保语句上下文自注意力有效。这里不展开。
 
 
 ### 1) Self-Attention： 自注意力机制
@@ -115,16 +119,25 @@ $$
 \text{Attention}(Q,K,V)=\text{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}\right)V
 $$
 
-式子中参数很多，但有理可循。
+式子中参数虽多，但从函数视角看是非常清晰的。
+
+我们逐个展开。
+
+> Attention过程涉及大量的矩阵运算，如果你对此一无所知，我推荐你先查看[矩阵的几何直观](/blog/matrix_geometric_intuition).
 
 #### Q、K、V
 
-式子中，被Attention函数包裹的是$QKV$，而Attention要操作的是输入矩阵$X$, 所以$QKV$和$X$必然存在关联。
-实际上，QKV代表的, 正是模型使用它在训练中习得的**权重经验**从三个角度对源句矩阵$X$进行投影所得的具有特殊目的矩阵——`权重矩阵`。
+我们的输入是$X$，而式子中，被Attention函数包裹的是$QKV$, 应该好奇，$X$和$QKV$的关系是什么？
 
-权重矩阵通常称为 $W$，像一份被反复打磨过的`"舞台剧本"`；每个 token 都是一个演员，它一开始只知道自己拿到的剧本内容，整出戏是否完美（语义是否完美），要靠它和其余演员充分**对戏**。
+实际上，$QKV$代表的, 正是模型训练后习得的**权重经验**从三个角度对源句矩阵$X$进行投影所得的具有特殊目的矩阵——`权重矩阵`。
 
-到了 Self-Attention 这里，这份“剧本”分成三部分：$W^Q,W^K,W^V$。它们不是输入句子的一部分，而是模型训练后留下来的参数。输入表示矩阵 $X$ 每进入一层，都会按这三组参数生成对应的 $Q,K,V$ 矩阵。
+权重矩阵通常称为 $W$，像一份被反复打磨过的`"舞台剧本"`:
+> 句子X是一出戏剧，每个 token 都是戏剧中的一个角色，角色们一开始只知道自己的角色内容，整出戏是否完美（语义是否完美），要靠它和其余演员充分**对戏**(Attention)。
+
+到了 Self-Attention 这里，这份“剧本W”分成三部分：$W^Q,W^K,W^V$。它们不是输入句子的一部分，而是模型的参数。输入表示矩阵 $X$ 每进入一层，都会按这三组参数生成对应的 $Q,K,V$ 矩阵。
+
+> 模型之初，$W$内部只是一个装着一堆随机数的大矩阵。这个初始矩阵不太可能实现良好的最终seq2seq输出，但经过训练，初始的权重随机数将不断优化而得到更加有效的新矩阵。
+
 
 实现上，先把当前表示矩阵 $X$ 投影成三组矩阵：
 
@@ -132,33 +145,28 @@ $$
 Q=XW^Q,\quad K=XW^K,\quad V=XW^V
 $$
 
-<Mermaid>
-flowchart LR
-  X0["当前表示矩阵 $$X$$"] --> WQ["乘 $$W^Q$$"]
-  X0 --> WK["乘 $$W^K$$"]
-  X0 --> WV["乘 $$W^V$$"]
-  WQ --> Q0["$$Q$$ 矩阵"]
-  WK --> K0["$$K$$ 矩阵"]
-  WV --> V0["$$V$$ 矩阵"]
-</Mermaid>
+如果只看矩阵中的第 $i$ 行，它们代表着：
 
-如果只看矩阵中的第 $i$ 行，它们分别有这样的角色：
+- $q_i$：这一行表示“我在找什么”（和我对戏的有哪些角色)
+- $k_i$：这一行表示“我如何被匹配”（我的角色是什么）
+- $v_i$：这一行表示“我能贡献什么内容”（我的戏份是什么） 
 
-- $q_i$：这一行表示“我在找什么”
-- $k_i$：这一行表示“我如何被匹配”
-- $v_i$：这一行表示“我能贡献什么内容”
 
-所以 $X$ 一次性乘上 $W^Q,W^K,W^V$，只是并行矩阵写法。它等价于每一行分别生成自己的 $q_i,k_i,v_i$：
+$X$一次性和$W$发生运算。它等价于每一行分别生成自己的 $q_i,k_i,v_i$：
 
 $$
 q_i=x_iW^Q,\quad k_i=x_iW^K,\quad v_i=x_iW^V
 $$
 
-这一步很像“领剧本”：同一个 token 表示行，经过三套不同参数，被投影成三种职能。
+> 注：权重矩阵$W$虽然分为$W^Q$,$W^K$,$W^V$三个部分，但在实际工程中表现成一个大矩阵，在编码中通过切片进行运算获取对应的QKV矩阵。
+> 而之所以这样做，是为了充分发挥GPU大矩阵乘法的优势
 
-#### 第二步：看一个完整的 Q、K、V 生成例子
 
-假设当前输入矩阵 $X$ 是 $4\times 6$。为了让后面的计算更有实感，下面拟三组同尺度的模拟权重。注意：这些数值只是为了演示矩阵链路，不代表真实模型训练出来的参数。
+#### Q、K、V 生成例子
+
+假设当前输入矩阵 $X$ 是 $4\times 6$, 同时拟三尺寸先沟通的$W^Q$,$W^K$,$W^V$。注意：这些数值只是为了演示矩阵链路，不代表真实模型训练出来的参数。
+
+> 权重矩阵的训练时机并在谷歌Attention is all you need论文的某个环节里，它的内容足够单开文章，这里暂不进行展开。
 
 三组权重矩阵可以一起写成：
 
@@ -251,23 +259,18 @@ V=XW^V=
 \end{matrix}
 $$
 
-这三次乘法的输入都是同一个 $X$，区别只在于右侧乘上的权重矩阵不同。于是同一批 token 表示，被投影到了三种不同的观察空间里：$Q$ 负责“我在找什么”，$K$ 负责“我如何被匹配”，$V$ 负责“如果别人关注我，我能贡献什么内容”。
+同一个 $X$被投影到了三种不同的权重矩阵里, 而这三个矩阵构成Attention的逻辑核心。
 
-注意，$Q,K,V$ 都是整句话共同组成的矩阵，而不是 $1\times n$ 的临时向量。后面之所以能抽出 $q_{love}$ 或 $k_I$，只是因为它们分别是 $Q,K$ 矩阵中的某一行。
+> 注1: $Q,K,V$ 都是整句话共同组成的矩阵，而不是 $1\times n$ 的临时向量。后面之所以能抽出 $q_{love}$ 或 $k_I$，只是因为它们分别是 $Q,K$ 矩阵中的某一行。
 
-这里让 $W^V$ 输出 6 维，是为了让 $AV$ 的结果可以直接回到主模型维度；真实 Multi-Head Attention 里也常见先输出较短的 $d_v$，最后再用 $W_O$ 投回 $d_{\text{model}}$。
+> 注2: 这里让 $W^V$ 输出 6 维，是为了让softmax结果可以直接回到主模型维度d_model；
+真实工程中也常见先输出较短的 $d_v$，最后在额外用 $W_O$ 投回 $d_{\text{model}}$。
 
-这也不是简单地“缩短向量”，而是把原始语义放到不同的新坐标系里观察。借用 3Blue1Brown 常讲的线性变换直觉：矩阵的列向量像新的基坐标轴，矩阵乘法就是把一个点投影到这些新轴上。$W^Q$ 让 token 表示变成“搜索信号”，$W^K$ 让 token 表示变成“可被搜索的标签”，$W^V$ 则保留“真正能被取走的内容”。
 
-#### 第三步：用 QK 转置计算表示行之间的打分
+####  Q·K^T （点积）
 
-生成 $Q,K,V$ 后，不是只算 $q_i k_i^\top$，而是让第 $i$ 行和所有 token 表示行做匹配：
 
-$$
-s_i=[q_i k_1^\top,q_i k_2^\top,\dots,q_i k_n^\top]
-$$
-
-整体写成矩阵，就是：
+获得三个矩阵后，Attention（拍戏）过程的第一步是$Q$$K$矩阵运算，但特别说明，形式为$Q \dot K^T$，对$K$矩阵进行倒置, 因为$6 X 3$和$3 X 6$才是合法的矩阵运算, 结果我们暂称$S$。公式为：
 
 $$
 S=QK^\top\in\mathbb{R}^{n\times n}
@@ -281,7 +284,9 @@ flowchart LR
   S --> Cell["S_ij: 第 i 行看第 j 行的分数"]
 </Mermaid>
 
-这里第 $i$ 行表示“第 $i$ 个 token 表示行在看谁”，第 $j$ 列表示“它看第 $j$ 个 token 表示行的分数”。所以 $QK^\top$ 得到的是 token 表示行之间的相似度，而不是特征维度之间的相关性。$K^\top$ 也没有改变 key 的含义，只是把所有 key 摆成适合被 query 批量点积的方向。
+这里第 $i$ 行表示:
+  - “第 $i$ 个 token 表示行在看谁”，
+  - 第 $j$ 列表示“它看第 $j$ 个 token 表示行的分数”  
 
 这里拿 $love$ 看 $I$ 做一次完整展开。为了避免跳读，先把完整 $Q,K$ 再摆出来：
 
@@ -333,14 +338,12 @@ k_I=K_{I,:}=
 \end{bmatrix}
 $$
 
-因为本文采用 token-as-row 写法，所以计算 $love$ 对 $I$ 的注意力打分时，是把 $k_I$ 转置成列向量，放在 $q_{love}$ 的右侧：
-
+它们的关联度(需要对戏的程度)得分为：
 $$
-\text{Score}_{love,I}=q_{love}k_I^\top
-$$
-
-$$
-q_{love}k_I^\top=
+\begin{align}
+\text{Score}_{love,I}
+&= q_{love}k_I^\top \\
+&=
 \begin{bmatrix}
 0.55 & 0.78 & 1.55
 \end{bmatrix}
@@ -348,22 +351,19 @@ q_{love}k_I^\top=
 0.422\\
 0.227\\
 0.100
-\end{bmatrix}
+\end{bmatrix} \\
+&=
+0.55\times0.422+0.78\times0.227+1.55\times0.100 \\
+&= 0.564
+\end{align}
 $$
 
-$$
-=
-\begin{bmatrix}
-0.55\times0.422+0.78\times0.227+1.55\times0.100
-\end{bmatrix}
-$$
+这里发生的是两个向量的点积，结果形式为数值。  
+该数值反映的是对词$love$而言词$i$的相关性，它意味着在最终翻译$love$时，应该从$i$中获取补充的程度。
+用拍戏比喻，它所代表的是为了完美演出该剧本，角色$love$的戏份里应与角色$i$的对戏占据多少：
 
-$$
-=
-\begin{bmatrix}
-0.564
-\end{bmatrix}
-$$
+
+由于我们的模型d_model维度很小，这个点积结果可以直观成下面的雷达图, 其中，重合度反映相关度。
 
 <Mermaid>
 radar-beta
@@ -375,25 +375,48 @@ radar-beta
   min 0
 </Mermaid>
 
-这个 $1\times1$ 的结果，就是 $love$ 这个 query 对 $I$ 这个 key 的原始注意力分数。
+不要忘了，我们只是取了其中一对token进行了举例，而实际运算是整个矩阵单次运算。  
+这是Attention的第一步，该阶段的产物，可以说是**每个角色都知道了剧本中和其它角色的对戏关系**。
 
-几何上，$k_I^\top$ 可以理解成一把由 $I$ 定义出来的线性标尺。$q_{love}$ 乘上 $k_I^\top$，不是把整个空间“倒过来”，而是用这把标尺去测量 $q_{love}$：它在 $I$ 所代表的 key 方向上投影有多强。
 
-如果分数很大，说明在当前语境里，$love$ 这个 token 很需要 attend to $I$；如果分数很小，说明 $I$ 对当前的 $love$ 来说暂时不重要。把这件事对所有 key 都做一遍，就得到 $love$ 那一整行 attention scores。
+#### Scaled - $\sqrt{d_k}$与$softmax$
 
-#### 第四步：用 softmax 变成比例，再混合 Value
+得到 scores 后，每一行会先除以 $\sqrt{d_k}$ 做缩放，再过$softmax$：
 
-得到 scores 后，每一行会先除以 $\sqrt{d_k}$ 做缩放，再过 softmax：
+不过，为了更好讲明白这两个内容，需要先解释$softmax$的工作:
+
+经过softmax，原先相似度结果矩阵的每个值$s_ij$将从score（相似得分）变成score_rate（得分占比），含义在于对$Token_i$而言，其全部的注意力中所拿出来关注$Token_j$的注意力占比。
+
+
+其经典的数学实现为:
 
 $$
-a_i=\text{softmax}\left(\frac{s_i}{\sqrt{d_k}}\right)
+\operatorname{softmax}(x_i)=
+\frac{e^{x_i}}{\sum_{j=1}^{n} e^{x_j}},
+\quad i=1,2,\dots,n
 $$
 
-最后用这一行比例混合所有 value：
+此时，对矩阵里任意$Token_i$（x_i）所持行向量而言，向量每个值变成占比，得分越高占比越大，总和为1。可以将该过程视为**注意力分配**。
 
-$$
-o_i=\sum_{j=1}^{n}a_{ij}v_j
-$$
+
+在$softmax$公式中，可见其依赖$mathrm{e}$，这意味着，如果存在极大极小的两极情况，会导致全部比重聚焦在极大区域。
+
+而$\sqrt{d_k}$就是来解决这个问题的，它位置称为缩放因子。缩放因子的用意在于对$Q \cdot K^T$做范围控制，控制结果矩阵的方差在一个区间避免两极情况。
+
+> 缩放因子为什么是$\sqrt{d_k}$而不是别的？Transformer原论文中之所以出现这个值源自一个假设，既矩阵$Q,K$内的向量$q,k$满足均值为0,方差为1的特征，它们点击后结果方差为$d_k$。$softmax$要处理的数据，理想方差为1，而能够使得缩放后结果方差为1的缩放因子值便是$\sqrt{d_k}$。  
+> 而这个假设源自机器学习行业的常规认知，它并非唯一解。如果感兴趣，可以查看下面两篇文章  
+> [苏剑林-浅谈Transformer的初始化、参数化与标准化](https://kexue.fm/archives/8620#NTK%E5%8F%82%E6%95%B0%E5%8C%96)  
+> [苏剑林-从熵不变性看Attention的Scale操作](https://kexue.fm/archives/8823#%E7%86%B5%E4%B8%8D%E5%8F%98%E6%80%A7)  
+
+
+#### V
+
+通过上一步我们得到了一个比例矩阵，它代表着每个$Token$都知道在最终原句语义生成时，向其它token获取语义补充的权重。
+拍戏比喻下，这意味着每个角色都知道在权重矩阵$W$剧本下，为了完美演绎，角色应该和哪些其它同事进行不同程度的对戏。
+
+然而光是知道对戏还不够，还需要知道的是——对方的戏份。而这便是权重矩阵$V$的位置。
+
+整体过程为:
 
 <Mermaid>
 flowchart LR
@@ -418,9 +441,15 @@ $$
 o_{love}=0.30v_I+0.45v_{love}+0.10v_{your}+0.15v_{dog}
 $$
 
-这一步就是“向量修正”。原本 $love$ 所在的坐标点，会吸收 $I,your,dog$ 等 token 的信息。于是它不再只是词典里那个孤立的动词，而变成了“由 I 发出、指向某个对象的 love”。这就是 attend to 在数学上的体现：一个 token 因为关注了别的 token，自己的向量位置被重新塑形。
+这一步就是“向量修正”。原本 $love$ 所在的坐标点，会吸收 $I,your,dog$ 等 token 的信息。于是它不再只是词典里那个孤立的动词，而变成了“由 I 发出、指向某个对象的 love”。
+其中，$I$参与了$love$的词义补正，这个过程有术语叫"Attend To"。
+这也符合我们的拍戏比喻，角色$I$"Attend To"了角色$love$的戏份。
 
-所以 Self-Attention 的核心并不只是“算相关性”，而是：
+
+#### 归纳
+
+
+总览全程，Self-Attention过程分为：
 
 1. 用 $W^Q,W^K,W^V$ 把表示矩阵投影成三种视角
 2. 用 $QK^\top$ 得到 token 表示行之间的对戏强度
@@ -428,10 +457,50 @@ $$
 4. 用这些比例混合 $V$，完成每个 token 的向量修正
 
 也就是说，每一层 Attention 都在让词向量发生一次空间位移。层数堆起来后，每个 token 的向量里都会逐渐带上全句的影子。
+读者可以在此处再次脑补一下我们的拍戏比喻。
 
-#### 第五步：多头就是多种视角同时对戏
+#### 多头注意力
 
-如果是 Multi-Head Attention，则相当于同一群演员同时从多种角度排练：有的头关注语法依赖，有的头关注指代关系，有的头关注语义搭配。多个 head 的结果拼接后，再通过 $W_O$ 投回主模型空间，继续交给后续层处理。
+Multi-Head Attention并不复杂。它只是同一群演员换了排练方式，从一种角度更换成多种角度(Head)：
+- 有的头关注语法依赖，
+- 有的头关注指代关系，
+- 有的头关注语义搭配。
+
+如果输入仍记作 $X\in\mathbb{R}^{n\times d_{\text{model}}}$，第 $i$ 个 head 会拥有自己的一组投影矩阵：
+
+$$
+\begin{align}
+Q_i&=XW_i^Q,\quad W_i^Q\in\mathbb{R}^{d_{\text{model}}\times d_k}\\
+K_i&=XW_i^K,\quad W_i^K\in\mathbb{R}^{d_{\text{model}}\times d_k}\\
+V_i&=XW_i^V,\quad W_i^V\in\mathbb{R}^{d_{\text{model}}\times d_v}
+\end{align}
+$$
+
+所以第 $i$ 个 head 的输出就是：
+
+$$
+\begin{align}
+\text{head}_i
+&=\text{Attention}(Q_i,K_i,V_i)\\
+&=\text{Attention}(XW_i^Q,XW_i^K,XW_i^V)
+\end{align}
+$$
+
+多个 head 的结果拼接后，再通过 $W^O$ 投回主模型维度，继续交给后续层处理：
+
+$$
+\begin{align}
+\text{MultiHead}(Q,K,V)
+&=\operatorname{Concat}(\text{head}_1,\text{head}_2,\dots,\text{head}_h)W^O\\
+W^O&\in\mathbb{R}^{hd_v\times d_{\text{model}}}
+\end{align}
+$$
+
+其中，$d_k=d_v=d_{\text{model}}/h$，每个 head 只看一小段子空间；$h$ 个 head 拼接起来后，维度又回到 $d_{\text{model}}$。
+读者可以自行推演$Q,K,V$矩阵尺寸与模型维度$d_model$的关系。
+
+
+拿我们上面的例子来看，过程图为：
 
 <Mermaid>
 flowchart LR
@@ -445,14 +514,24 @@ flowchart LR
   WO --> Out2["Multi-Head 输出"]
 </Mermaid>
 
-总结，Attention 要做的事，不是让某个 token 单独“理解全句”，而是让每个 token 在全句语境里重新理解自己：我是谁、我和谁有关、我该吸收谁的信息、最后我应该带着怎样的语义继续往后走。
+> 注意：
+> 多头意味着Attention所依赖的权重矩阵应有多个, 并且每个头对应的$W_i$都是独立的权重参数。
 
 
-### 2) Add & Norm：稳定训练并保留原信息
-注意力输出不会直接替换输入，而是残差相加，再归一化：
+### 2) Add & Norm
+
+Self-Attention 已经把每个 token 的向量修正过一次。但直接把这个修正结果传下去，深层训练很容易出问题：数值可能越漂越大，原始词义也可能慢慢丢失。
+
+所以 Transformer结构中每一层都加入一个稳定组件：
+
 $$
 X'=\text{LayerNorm}(X+\text{SelfAttention}(X))
 $$
+
+它分为两步：
+
+- **Add**：把 Self-Attention 的输出和原始输入 $X$ 相加，保留原始信号。
+- **LayerNorm**：对相加后的结果做归一化，把数值压回稳定范围。
 
 <Mermaid>
 flowchart LR
@@ -462,20 +541,172 @@ flowchart LR
   LN --> Xp["X'"]
 </Mermaid>
 
-这样做有两个好处：
-- 原始信息不丢（有“捷径”可走）
-- 深层网络更稳定（梯度不容易炸或消失）
+FFN 之后还会再来一次：
 
-### 3) FFN：逐位置非线性加工
-然后每个位置独立走同一个前馈网络：
+$$
+X_{next}=\text{LayerNorm}(X'+\text{FFN}(X'))
+$$
+
+也就是说，**Attention 和 FFN 各自前后都有一次 Add & Norm**。它们共同保证信息的稳定传递。
+
+#### Add - 残差连接
+
+假设经过 Self-Attention 后，token `love` 的向量从：
+
+$$
+x_{love}=[0.4,0.5,0.6]
+$$
+
+被修正成：
+
+$$
+\text{SelfAttention}(x_{love})=[2.1,-1.0,0.3]
+$$
+
+如果没有残差连接，下一层收到的就是 `[2.1, -1.0, 0.3]`。这个向量已经和 `love` 的原始向量 `[0.4, 0.5, 0.6]` 没多大关系了。如果每层都这样改，6 层(论文中Encoder Layer的层数)之后，模型可能完全忘记 `love` 原本是什么意思。
+
+加上残差连接后：
+$$
+\begin{align}
+x_{love}'
+&= x_{love} + \text{SelfAttention}(x_{love}) \\
+&= [0.4,0.5,0.6] + [2.1,-1.0,0.3] \\
+&= [2.5,-0.5,0.9]
+\end{align}
+$$
+
+虽然数值变了，但 `[2.5, -0.5, 0.9]` 这个向量仍然**包含原始 `[0.4, 0.5, 0.6]` 的成分**。原始信号没有被丢弃，而是作为“底子”保留了下来。
+
+用拍戏比喻来说：**$Attention$ 让每个演员重新理解了自己的戏份，但$Add$让演员不会忘记自己“原本是谁”**。
+
+除了保留信息，Add 还有另一个重要作用：
+深度学习算法中是通过**反向传播机制**来调整模型参数实现训练的，直接依赖于梯度，通过梯度指导模型参数优化。
+梯度的计算是从深层(靠近输出)向浅层(靠近输入)不断链式累乘运算，如果不做任何处理，会出现梯度在前面就趋向于零（梯度消失），这样，浅层的参数将无法得到有效训练, 而通过$Add$，在运算时就能够确保梯度稳定到达浅层。 
+
+核心就在于残差连接的数学形式：**y = x + f(x)** 的导数里天然带一个 +1（单位矩阵）。展开一下:
+
+1. 没有 Add 时
+
+假设网络的一层是：
+
+$$
+y = f(x)
+$$
+
+其中 $f$ 可能包含 Attention、FFN、LayerNorm 等。
+
+反向传播求梯度：
+
+$$
+\frac{\partial L}{\partial x} = \frac{\partial L}{\partial y} \cdot \frac{\partial y}{\partial x}
+= \frac{\partial L}{\partial y} \cdot f'(x)
+$$
+
+如果网络很深(仍以6层为例)：
+
+$$
+x_6 = f_6(f_5(f_4(f_3(f_2(f_1(x))))))
+$$
+
+那么梯度从 Loss 传回 $x_1$ 时要连乘：
+
+$$
+\frac{\partial L}{\partial x_1}
+= \frac{\partial L}{\partial x_6}
+\cdot f_6'(x_5)
+\cdot f_5'(x_4)
+\cdot f_4'(x_3)
+\cdot f_3'(x_2)
+\cdot f_2'(x_1)
+\cdot f_1'(x)
+$$
+
+如果每个 $f_i'(x)$ 的范数都小于 1（比如 0.6），那么 6 层乘起来：
+
+$$
+0.6^6 \approx 0.047
+$$
+
+越往浅层，梯度越小，参数更新越慢，这就是梯度消失。
+
+
+2. 有 Add 时
+
+残差连接变成：
+
+$$
+y = x + f(x)
+$$
+
+导数变成：
+
+$$
+\frac{\partial y}{\partial x} = I + f'(x)
+$$
+
+其中 $I$ 是单位矩阵。
+
+反向传播：
+
+$$
+\frac{\partial L}{\partial x}
+= \frac{\partial L}{\partial y} \cdot \frac{\partial y}{\partial x}
+= \frac{\partial L}{\partial y} \cdot (I + f'(x))
+$$
+
+即使 $f'(x)$ 很小，梯度里仍然保留了一个完整的 $\frac{\partial L}{\partial y}$ 项。
+
+
+#### Layer Normalization 标准/归一化
+
+如果没有 Norm，残差相加后的数值会一层一层累加。例如，假设每层的修正量都差不多：
+
+$$
+[0.4,0.5,0.6] + [2.1,-1.0,0.3] = [2.5,-0.5,0.9]
+$$
+
+第二层继续加：
+
+$$
+[2.5,-0.5,0.9] + [2.1,-1.0,0.3] = [4.6,-1.5,1.2]
+$$
+
+到第六层时，向量可能已经变成：
+
+$$
+[13.0,-5.5,2.4]
+$$
+
+数值越来越大，分布也越来越不稳定。后面的层拿到这种输入，训练会变得非常困难。
+
+那么，LayerNorm 的作用来了：对每个 token 向量做归一化，把**均值压到 0、方差压到 1**，再通过可学习的 $\gamma$ 和 $\beta$ 微调：
+
+$$
+\text{LayerNorm}(x)=\gamma\cdot\frac{x-\mu}{\sqrt{\sigma^2+\varepsilon}}+\beta
+$$
+
+> 在原论文的 Transformer 里，Add 和 Norm 是 Post-Norm 形式：先加，再归一化。现代很多大模型（如 GPT、LLaMA）则采用 Pre-Norm：
+>> $$
+>> X_{next}=X+\text{FFN}(\text{LayerNorm}(X))
+>> $$
+
+
+### 3) FFN：MLP is still what you need
+
+Attention is all you need 这篇论文的名字只强调了 Attention，但 Transformer 的真正核心其实是 **Attention + FFN**。
+
+- **Attention** 解决“token 之间如何交换信息”。
+- **FFN** 解决“每个 token 拿到信息之后，如何在自己内部重新加工”。
+
+如果把每个 token 看作一个演员，那么 Attention 是让演员之间对戏，FFN 则是让演员在对完戏后，自己消化自己的剧本进行后续发挥。
+
+FFN 的公式是：
+
 $$
 \text{FFN}(x)=\max(0,xW_1+b_1)W_2+b_2
 $$
 
-再做一次 Add & Norm：
-$$
-X_{next}=\text{LayerNorm}(X'+\text{FFN}(X'))
-$$
+其中 $\max(0, \dots)$ 是 ReLU 激活，现代模型也常用 GELU。
 
 <Mermaid>
 flowchart LR
@@ -487,62 +718,110 @@ flowchart LR
   LN2 --> Next["下一层输入"]
 </Mermaid>
 
-这表示：先“看全局关系”，再“做本地提纯”。
+#### Attention + FFN？
 
-这里的“逐位置”很重要。Self-Attention 会让 token 之间交换信息，而 FFN 不再让 token 彼此通信。它对每个位置单独处理，但所有位置共享同一套 $W_1,b_1,W_2,b_2$ 参数。
-
-也就是说，对第 $i$ 个 token 来说：
+Attention 的输出本质上是：
 
 $$
-x_i' \rightarrow \text{FFN}(x_i')
+\text{Attention Output} = \sum_j a_{ij} v_j
 $$
 
-对第 $j$ 个 token 来说：
+也就是说，每个位置的新向量是其他位置 Value 向量的**加权平均**。它仍然是输入空间里的线性组合，只是权重不同。
+
+如果只有 Attention，不管堆多少层，模型学到的东西都会受到限制：**它只能重新分配已有的信息，不能创造新的、更抽象的特征**。
+
+FFN 的作用就是给模型加入**非线性变换能力**，让模型掌握类如“如果存在某特征，就增强；如果不存在，就抑制”的能力。
+
+> FFN是单层共用的：
+>> 对第 $i$ 个 token：
+>> 
+>> $$
+>> x_i' \rightarrow \text{FFN}(x_i')
+>> $$
+>> 对第 $j$ 个 token：
+>> 
+>> $$
+>> x_j' \rightarrow \text{FFN}(x_j')
+>> $$
+>> 两者使用同一套参数 $W_1, b_1, W_2, b_2$。
+
+#### 升维、激活、降维
+
+FFN 过程为`升维 -> 激活 -> 降维`：
 
 $$
-x_j' \rightarrow \text{FFN}(x_j')
+d_{\text{model}} \rightarrow d_{\text{ff}} \rightarrow d_{\text{model}}
 $$
 
-两者互不读取，但使用的是同一个函数。这有点像给每个已经融合上下文的 token 都做一次相同规格的“特征重组”。
+原论文里 $d_{\text{ff}} = 4 \times d_{\text{model}}$。比如 $d_{\text{model}} = 512$ 时，FFN 中间维度就是 2048。
 
-这个加工通常可以理解为一次“升维—激活—降维”：
+这样的好处是：
 
-1. 先升维：$W_1$ 把向量投影到更宽的隐藏空间。低维里挤在一起的语义，到了高维后更容易被展开。
-2. 再激活：ReLU 或 GELU 引入非线性。否则两次矩阵乘法本质上仍然可以合并成一次线性变换，表达能力不够。
-3. 最后降维：$W_2$ 把结果压回 $d_{\text{model}}$，保证输出尺寸和输入一致，下一层 Encoder 才能继续接上。
+1. **升维**：把语义展开到更高维空间，让原本纠缠在一起的特征更容易分开处理。
+2. **激活**：用非线性函数把线性不可分的问题变成可分的问题。
+3. **降维**：把结果压回 $d_{\text{model}}$，保证下一层 Encoder 能继续接下去。
 
-所以，Attention 负责把“别的 token 的信息”写进当前位置，FFN 负责在当前位置内部重新组合这些信息。前者解决“该看谁”，后者解决“看完以后怎么消化”。
+#### Key-Value 记忆
 
-当这样的层堆叠多次后，Encoder输出最终上下文表示：
+除了非线性变换，FFN 还承担了一个重要角色：**存储知识**。
+
+近年来很多可解释性研究认为，FFN 可以被理解为一种 **Key-Value 记忆**。
+
+- $W_1$ 负责把输入向量匹配到某些“键”（特定神经元）。
+- $W_2$ 负责输出这些神经元对应的“值”（语义补充）。
+
+每个隐藏层神经元就像一个知识条目。当输入向量匹配某个条目时，这个神经元被激活，然后通过 $W_2$ 把相关知识写进残差流。
+
+比如输入中出现 `Michael Jordan`：
+
+1. 它的向量经过 $W_1$ 投影。
+2. 某些神经元被激活，这些神经元在训练过程中学会了“Michael Jordan 相关模式”。
+3. 被激活的神经元通过 $W_2$ 输出一段方向，对应“篮球运动员”、“NBA”、“芝加哥公牛”等语义。
+4. 这段输出通过残差连接加到原始向量上。
+
+所以，Michael Jordan 是篮球运动员这个信息，**不在输入 token 里，而在 FFN 的权重里**。
+
+
+因为FFN层承载如此多的信息，所以一个 Transformer 模型的主要参数不在 Attention，而在 FFN：
+
+$$
+\text{FFN 每层参数量} \approx 2 \times d_{\text{model}} \times d_{\text{ff}}
+$$
+
+如果 $d_{\text{ff}} = 4 \times d_{\text{model}}$，那么 FFN 参数就是 Attention 参数的数倍。
+
+所以“把模型做大”很大程度上就是扩大 FFN 的隐藏层维度。FFN 越大，能存储和处理的知识条目就越多，模型能力通常也越强。
+
+
+> 和 Attention 后面一样，FFN 输出之后也要做一次$Add Norm$：
+>> $$
+>> X_{next}=\text{LayerNorm}(X'+\text{FFN}(X'))
+>> $$
+
+到此，一个层内的流程跑完。输出结果将传递到下一层，如果已经是Encoder堆的最后一层，Encoder 输出最终上下文表示：
 $$
 Z=(z_1,z_2,\dots,z_n)
 $$
 
-姑且把$Z$叫作memory(Attention is all you need论文上并没有对该产物进行命名，但是多数代码实现上把它命名为memory）,它可以理解为“机器已理解后的语义记忆”，随后交给 Decoder 去完成陈述与生成。
+姑且把 $Z$ 叫作 memory（Attention is all you need 论文本身没有命名它，但多数实现代码中叫 memory），作为模型“已理解后的语义记忆”，随后交给 Decoder 去完成陈述与生成。
 
-## Decoder - 陈述的实现
 
-Encoder 做完以后，机器已经有了一份对源句的理解，也就是前面说的 memory：
+## Decoder：陈述
 
-$$
-Z=(z_1,z_2,\dots,z_n)
-$$
+Encoder 把源句读成 memory $Z$ 后，Decoder 负责根据这份记忆，逐词生成目标句。
 
-如果 Encoder 像“读懂原句”，那么 Decoder 就像“根据理解往外说”。但它不是一次性把目标句全部吐出来，而是一步一步生成：
-
-$$
-\text{<BOS>} \rightarrow \text{I} \rightarrow \text{love} \rightarrow \text{your} \rightarrow \text{dog}
-$$
-
-在翻译里，更真实的目标句可能是中文，比如：
+它不是一次性输出整句，而是**自回归**地一个 token 一个 token 生成：
 
 $$
 \text{<BOS>} \rightarrow \text{我} \rightarrow \text{爱} \rightarrow \text{你的} \rightarrow \text{狗}
 $$
 
-这里的 `<BOS>` 表示 begin of sentence，也就是“开始说话”的信号。
+> `<BOS>` 是 begin of sentence，  
+> `<EOS>` 是 end of sentence。  
+> 生成 `<EOS>` 时，代表整句翻译完成。
 
-Decoder 的整体流程可以先看成这样：
+Decoder 的输入不是源句$X$，而是目标端已经生成的部分，经过 Embedding 和 Position Embedding 后得到矩阵 $Y$。它的处理
+流程如下：
 
 <Mermaid>
 flowchart LR
@@ -551,475 +830,153 @@ flowchart LR
   Masked --> Cross["Cross-Attention"]
   Memory["Encoder memory Z"] --> Cross
   Cross --> FFN["FFN"]
-  FFN --> Linear["Linear"]
-  Linear --> Softmax["Softmax"]
-  Softmax --> Next["下一个 token"]
+  FFN --> Linear["Linear + Softmax"]
+  Linear --> Next["下一个 token"]
 </Mermaid>
 
-它比 Encoder 多了一件关键事情：Decoder 既要看自己已经说过的话，也要看 Encoder 理解出来的源句上下文。
+Decoder中特别地，有两个Attention层。
 
-### 1) 目标端 Embedding：把已经说出的词变成矩阵
+### Masked Self-Attention
 
-Decoder 的输入不是源句，而是目标句中“已经生成出来的部分”。
+Decoder 的第一层 Attention 和 Encoder 很像，但多了一个 mask：**生成第 $t$ 个词时，不能看第 $t+1$ 个及以后的位置。否则训练时它会直接抄答案。**
 
-假设现在模型已经生成了：
+> Decoder有两层Attention，它们各自拥有不同的权重矩阵$W$。
 
-$$
-Y=(y_1,y_2,\dots,y_m)
-$$
-
-经过目标端 Embedding 和 Position Embedding 后，也会得到一个矩阵：
+公式上只在 softmax 前加一个 mask 矩阵 $M$：
 
 $$
-Y\in\mathbb{R}^{m\times d_{\text{model}}}
-$$
-
-<Mermaid>
-flowchart LR
-  A["已生成: BOS, 我, 爱"] --> B["Tokenization"]
-  B --> C["目标端 Embedding"]
-  C --> D["Position Embedding"]
-  D --> E["目标表示矩阵 $$Y$$"]
-</Mermaid>
-
-这和 Encoder 的输入矩阵 $X$ 很像，只不过 $X$ 来自源句，$Y$ 来自目标端已经生成的部分。
-
-### 2) Masked Self-Attention：只能看过去，不能偷看未来
-
-Decoder 的第一层 Attention 叫 Masked Self-Attention。
-
-它和 Encoder 的 Self-Attention 很像，也会从 $Y$ 中生成：
-
-$$
-Q_Y=YW^Q,\quad K_Y=YW^K,\quad V_Y=YW^V
-$$
-
-区别在于：Decoder 生成第 $t$ 个词时，不能提前看到第 $t+1$ 个词。否则训练时它会作弊，直接抄答案。
-
-所以，它需要一个 mask，把未来位置遮住：
-
-<Mermaid>
-flowchart LR
-  Y0["目标表示矩阵 $$Y$$"] --> QKVY["生成目标端 QKV"]
-  QKVY --> ScoreY["打分矩阵"]
-  Mask["未来位置 Mask"] --> ScoreY
-  ScoreY --> SoftY["Masked Softmax"]
-  SoftY --> OY["目标端上下文矩阵"]
-</Mermaid>
-
-矩阵上可以理解成：
-
-$$
-\text{MaskedAttention}(Q_Y,K_Y,V_Y)
-=
+\text{MaskedAttention}(Q_Y,K_Y,V_Y)=
 \text{softmax}\left(\frac{Q_YK_Y^\top+M}{\sqrt{d_k}}\right)V_Y
 $$
 
-其中 $M$ 是 mask 矩阵。允许看的地方是 $0$，不允许看的未来位置是 $-\infty$。这样 softmax 之后，未来位置的概率就会变成 0。
+允许看的位置填 $0$，未来位置填 $-\infty$。这样 softmax 后，未来位置的概率就变成 0。
 
-比如目标端已有 4 个位置时，mask 大概长这样：
+> 目标端有 4 个位置时，mask长这样：
+> $$
+> M=\begin{bmatrix}
+> 0 & -\infty & -\infty & -\infty\\
+> 0 & 0 & -\infty & -\infty\\
+> 0 & 0 & 0 & -\infty\\
+> 0 & 0 & 0 & 0
+> \end{bmatrix}
+> $$
+> 通过置入极小值，屏蔽后续值干扰
 
-$$
-M=
-\begin{bmatrix}
-0 & -\infty & -\infty & -\infty\\
-0 & 0 & -\infty & -\infty\\
-0 & 0 & 0 & -\infty\\
-0 & 0 & 0 & 0
-\end{bmatrix}
-$$
 
-它的含义很直接：
+### Cross-Attention
 
-- 第 1 个位置只能看第 1 个位置
-- 第 2 个位置可以看第 1、2 个位置
-- 第 3 个位置可以看第 1、2、3 个位置
-- 越往后，能看的历史越多，但永远不能看未来
+Cross-Attention 的 Cross 来自于它跨越两个序列：Decoder 的当前序列和 Encoder 的源序列。
 
-<Mermaid>
-flowchart TD
-  P1["位置 1"] --> A1["可看: 1"]
-  P2["位置 2"] --> A2["可看: 1,2"]
-  P3["位置 3"] --> A3["可看: 1,2,3"]
-  P4["位置 4"] --> A4["可看: 1,2,3,4"]
-</Mermaid>
-
-这就是自回归的核心：每一步只能根据过去和现在，猜下一个词。
-
-### 3) Cross-Attention：一边说，一边回看原文
-
-Masked Self-Attention 解决的是“目标句内部的上下文”。比如已经说了“我 爱”，那下一步很可能要说一个宾语。
-
-但翻译不能只看自己说过什么，还要回看原文。这个动作就是 Cross-Attention。
-
-Cross-Attention 的关键在于：$Q$ 来自 Decoder，$K,V$ 来自 Encoder。
+它和Self-Attention的关键区别：$Q$ 通过Masked传入，$K,V$ 来自 Encoder memory：
 
 $$
 Q=Y'W^Q,\quad K=ZW^K,\quad V=ZW^V
 $$
 
-这里 $Y'$ 是 Masked Self-Attention 之后的目标端表示，$Z$ 是 Encoder 输出的 memory。
+> 这里 $Y'$ 是 Masked Self-Attention 的输出，$Z$ 是 Encoder 最终输出的 memory。
 
-<Mermaid>
-flowchart LR
-  Dec["Decoder 当前表示 $$Y'$$"] --> Qc["生成 Query"]
-  Mem["Encoder memory $$Z$$"] --> Kc["生成 Key"]
-  Mem --> Vc["生成 Value"]
-  Qc --> CrossScore["Cross-Attention"]
-  Kc --> CrossScore
-  Vc --> CrossScore
-  CrossScore --> OutC["结合原文后的目标表示"]
-</Mermaid>
+含义是：Decoder 当前位置通过 Query 去问，“原文里哪些位置和我现在要翻译的内容相关？”然后取走对应 Value 里的语义。
 
-公式仍然是熟悉的 Attention：
+比如生成“狗”时，Decoder 的 Cross-Attention 会强烈关注 Encoder memory 中对应 `dog` 的那一行；生成“你的”时，则更关注 `your`。这就是翻译中的“对齐”。
+
+### 例 - 两个时刻
+
+
+我们用源句 `I love your dog`，挑选两个自回归时刻做演示：
 
 $$
-\text{CrossAttention}(Q,K,V)=
-\text{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}\right)V
+\text{<BOS>} \rightarrow \text{我} \rightarrow \text{爱} \rightarrow \text{你的} \rightarrow \text{狗}
 $$
 
-只是这次含义变了：
+**时刻一：生成“我”**
 
-- Query 来自 Decoder：我现在要说什么？
-- Key 来自 Encoder：原文里哪些位置能回应我？
-- Value 来自 Encoder：如果我关注了这些原文位置，可以取走什么语义？
+Decoder 输入只有 `<BOS>`。经过 Masked Self-Attention 后，它知道“句子刚开始”。Cross-Attention 的 Query 带着这个状态去问原文 memory：
 
-如果继续用演员比喻：Masked Self-Attention 是目标句演员内部先对戏，确认“我前面已经说了什么”；Cross-Attention 则是目标句演员回头看原文演员，确认“我现在该翻译原文里的哪一部分”。
+> “源句开头是什么？该先翻译什么？”
 
-比如在生成“狗”时，Decoder 里当前这个位置可能会强烈关注 Encoder memory 中对应 `dog` 的那一行；生成“你的”时，则可能更关注 `your`。这就是翻译里的对齐感。
+原文 memory 中对应 `I` 的响应最强，所以 Decoder 输出 “我”。
 
-### 4) Decoder 里的 Add & Norm 和 FFN
+**时刻二：生成“狗”**
 
-Decoder 每个 Attention 后也会做 Add & Norm。
+此前 Decoder 已经生成 `<BOS> 我 爱 你的`。Masked Self-Attention 看到这段前缀，形成状态 $Y'$：接下来需要接一个名词。Cross-Attention 的 Query 带着这个状态去问原文：
 
-第一处：
+> “我已经说了‘我 爱 你的’，接下来需要名词，原文里哪个词该被翻译？”
 
-$$
-Y'=\text{LayerNorm}(Y+\text{MaskedSelfAttention}(Y))
-$$
+原文 memory 中对应 `dog` 的响应最强，所以 Decoder 输出 “狗”。
 
-第二处：
+每个时刻生成的 token 都会被追加回目标序列，继续下一轮。
 
-$$
-Y''=\text{LayerNorm}(Y'+\text{CrossAttention}(Y',Z))
-$$
+### Add & Norm
 
-然后再经过 FFN：
+Decoder 层内有两处 Attention，一样的，后面都接 Add & Norm，最后再过 FFN：
 
-$$
-Y_{\text{next}}=\text{LayerNorm}(Y''+\text{FFN}(Y''))
-$$
+> $$
+> Y'=\text{LayerNorm}(Y+\text{MaskedSelfAttention}(Y))
+> $$
+> $$
+> Y''=\text{LayerNorm}(Y'+\text{CrossAttention}(Y',Z))
+> $$
+> $$
+> Y_{\text{next}}=\text{LayerNorm}(Y''+\text{FFN}(Y''))
+> $$
 
-<Mermaid>
-flowchart LR
-  Y0["输入 Y"] --> MSA["Masked Self-Attention"]
-  MSA --> AN1["Add & Norm"]
-  AN1 --> CA["Cross-Attention"]
-  Z0["Memory Z"] --> CA
-  CA --> AN2["Add & Norm"]
-  AN2 --> FFND["FFN"]
-  FFND --> AN3["Add & Norm"]
-  AN3 --> YN["Decoder 层输出"]
-</Mermaid>
+这里不再展开。
 
-这部分和 Encoder 的逻辑很像：Attention 负责交换信息，FFN 负责在每个位置内部做非线性加工，Add & Norm 则负责稳定训练并保留原信息。
+完成这一步，当前层的decoder任务就算完成了，下一步和encoder是一样的。如果当前层不是最后一层，则继续往下一层encoder层传递，反之作为最后一层的输出进入到下一步。
 
-区别在于 Decoder 有两次 Attention：
+### Linear + Softmax
 
-1. 第一次看目标端自己，但只能看过去
-2. 第二次看 Encoder 的 memory，把原文语义接进来
+Decoder 最后一层输出的是一个矩阵。在自回归生成中，我们只需要**最后一个位置**的向量 $o_t$ 来决定下一个词。但 $o_t$ 还在内部语义空间 $\mathbb{R}^{d_{\text{model}}}$ 里，要变成词表上的概率，需要两步。
 
-### 5) Linear + Softmax：从向量变成词
+**第一步：Linear 投影**
 
-Decoder 最后一层输出后，还只是一个表示矩阵。要真正生成词，还需要把最后一个位置的向量变成词表上的概率分布。
-
-假设最后一个位置的输出向量是 $o_t$，先经过线性层：
+通过一个线性层，把 $o_t$ 映射到词表维度：
 
 $$
 \text{logits}=o_tW_{\text{vocab}}+b
 $$
 
-其中 $W_{\text{vocab}}$ 会把模型维度投影到词表大小：
-
 $$
 \mathbb{R}^{d_{\text{model}}}\rightarrow\mathbb{R}^{|\mathcal{V}|}
 $$
 
-然后 softmax：
+$W_{\text{vocab}}$ 的每一行对应词表里的一个词。投影后，每个维度代表一个词的“分数”，分数越高，说明这个词越适合作为下一个 token。
+
+> 例如词表里有 5 万个词，logits 就是一个 5 万维向量。假设其中“狗”的分数是 4.2，“猫”是 1.5，“人”是 0.3，模型当前最倾向于生成“狗”。
+
+**第二步：Softmax**
+
+Softmax 把 logits 转成合法的概率分布，所有词的概率之和为 1：
 
 $$
 p_t=\text{softmax}(\text{logits})
 $$
 
+> 接上面的例子：
+> $$
+> P(\text{狗})=0.62,\quad P(\text{猫})=0.11,\quad P(\text{人})=0.04
+> $$
+
 <Mermaid>
 flowchart LR
-  Ot["最后位置向量 $$o_t$$"] --> Linear2["Linear 到词表维度"]
-  Linear2 --> Logits["logits"]
-  Logits --> Prob["Softmax 概率分布"]
+  Ot["最后位置向量 $$o_t$$"] --> Linear["Linear 投影到词表"]
+  Linear --> Logits["logits"]
+  Logits --> Softmax["Softmax"]
+  Softmax --> Prob["词表概率分布"]
   Prob --> Pick["选择下一个 token"]
 </Mermaid>
 
-如果词表里有很多候选词，softmax 会给每个词一个概率。比如：
+> 最后，模型根据这个概率分布选择下一个 token, 这里选词方案也存在多种，论文中使用的是`beam search`，这里不展开。
+> 选出的 token 会被追加回目标序列，再送入 Decoder 继续下一轮。直到生成 `<EOS>`，整句翻译结束。
+> 到这里，经典 Encoder-Decoder Transformer 的主线就闭合了：Encoder 负责把源句读成 memory，Decoder 负责根据 memory 一步步说出目标句。
 
-$$
-P(\text{狗})=0.62,\quad
-P(\text{猫})=0.11,\quad
-P(\text{人})=0.04
-$$
 
-模型就会根据解码策略选择下一个 token。最简单的是取概率最高的词，也就是 greedy decoding；更复杂的还有 beam search、top-k、top-p 等方法。这里先不展开，否则会跑出 Transformer 主线。
+## 结语
 
-生成出下一个 token 后，它会被追加到目标序列末尾，再送回 Decoder，继续生成下一个：
+到此，我们已经领略了经典Transformer架构全程。这个典型结构为了解决机器翻译`seq2seq`问题而提出，先入为主地我们将其比作了翻译机，然后从encoder-decoder到内层，逐层拆解，从最初的分词到memory的全句语义构建，再到decoder进行逐字输出译文, 完成地说明了每个层，每个组件的工作机制及用意。
 
-<Mermaid>
-flowchart LR
-  Start["BOS"] --> D1["Decoder"]
-  D1 --> W1["我"]
-  W1 --> D2["Decoder"]
-  D2 --> W2["爱"]
-  W2 --> D3["Decoder"]
-  D3 --> W3["你的"]
-  W3 --> D4["Decoder"]
-  D4 --> W4["狗"]
-</Mermaid>
+掌握了翻译机结构后，我们才能走向目前炙手可热的大模型知识领域。
 
-所以 Decoder 的本质是循环陈述：
 
-1. 看自己已经说过什么
-2. 回看 Encoder 理解出的原文 memory
-3. 生成下一个最合适的 token
-4. 把这个 token 接回输入，继续下一轮
 
-直到生成 `<EOS>`，也就是 end of sentence，整句翻译才结束。
 
-<Mermaid>
-flowchart LR
-  History["已生成序列"] --> DecoderLoop["Decoder"]
-  MemoryLoop["Encoder memory"] --> DecoderLoop
-  DecoderLoop --> NextToken["下一个 token"]
-  NextToken --> History
-  NextToken --> EOS["若为 EOS 则结束"]
-</Mermaid>
-
-到这里，经典 Encoder-Decoder Transformer 的主线就闭合了：Encoder 负责把源句读成 memory，Decoder 负责根据 memory 一步步说出目标句。
-
-
-## 为什么是Transformer
-
-讲完 Encoder 和 Decoder 后，还剩一个问题：为什么偏偏是 Transformer？
-
-它不是唯一能做翻译的模型。RNN、LSTM、GRU、CNN Seq2Seq 都能做。但 Transformer 真正厉害的地方在于：它把“语义建模”这件事，改造成了特别适合扩大规模、特别适合 GPU 并发、特别适合大数据训练的矩阵计算。
-
-可以粗略概括为三点：
-
-1. 它能比较自然地把模型做大
-2. 它能充分利用 GPU 并发
-3. 它把长距离依赖的路径压短了，训练效率更高
-
-<Mermaid>
-flowchart LR
-  T["Transformer"] --> Scale["更容易扩大规模"]
-  T --> GPU["更适合 GPU 并发"]
-  T --> Path["更短的信息路径"]
-  Scale --> Better["更强表达能力"]
-  GPU --> Faster["更高训练吞吐"]
-  Path --> Learn["更容易学习长距离关系"]
-</Mermaid>
-
-### 1) 深度学习为什么喜欢大模型
-
-深度学习里有一个很朴素经验：在数据足够、训练足够稳定的前提下，模型规模越大，通常效果越好。
-
-这里的“大”是指：
-
-- 层数更深，可以做更多轮抽象
-- 隐藏维度更宽，可以容纳更丰富的语义
-- FFN 中间层更大，可以提供更强的非线性加工能力
-- Attention head 更多，可以从更多关系角度观察句子
-
-Transformer 正好非常适合做这些扩展。
-
-前面说过，一个 Transformer Block 大致由 Self-Attention、Add & Norm、FFN 组成。其中真正吃参数的大头，往往不是 Attention，而是 FFN。
-
-典型 FFN 是：
-$$
-\text{FFN}(x)=\sigma(xW_1+b_1)W_2+b_2
-$$
-
-如果模型维度是 $d_{\text{model}}$，中间层维度是 $d_{\text{ff}}$，那么 FFN 的主要参数量大约是：
-
-$$
-2d_{\text{model}}d_{\text{ff}}
-$$
-
-这意味着 Transformer 可以很直接地通过扩大 $d_{\text{model}}$、扩大 $d_{\text{ff}}$、增加层数、增加 head 数来提升容量。
-
-<Mermaid>
-flowchart LR
-  Small["小模型"] --> Width["扩大 d_model"]
-  Small --> FFN["扩大 d_ff"]
-  Small --> Depth["堆叠更多层"]
-  Small --> Heads["增加 heads"]
-  Width --> Big["更大 Transformer"]
-  FFN --> Big
-  Depth --> Big
-  Heads --> Big
-</Mermaid>
-
-但“能变大”不等于“变大后还能训练”。Transformer 能撑住规模，基于一下：
-
-- 残差连接让信息有捷径可走，深层时不容易断
-- LayerNorm 稳定每层输入输出的分布
-- Attention 让每层都能直接交换全局信息
-- FFN 提供大规模参数容量，负责局部非线性加工
-
-所以它不是单纯把 MLP 堆大，而是把“全局通信”和“大规模非线性加工”组合到一个稳定的模块里，再一层层堆起来。
-
-从这个角度看，Transformer 的核心不是某个单独公式，而是一个非常适合 scale up 的工程结构。
-
-### 2) Transformer 为什么适合 GPU
-
-GPU 擅长什么并行计算？
-
-RNN 类模型的问题在于，它天然有时间顺序依赖。要算第 $t$ 个位置，往往得先算完第 $t-1$ 个位置：
-
-$$
-h_t=f(h_{t-1},x_t)
-$$
-
-这就像排队传话。第 10 个人想开口，必须等前 9 个人依次说完。
-
-<Mermaid>
-flowchart LR
-  R1["x1"] --> R2["x2"]
-  R2 --> R3["x3"]
-  R3 --> R4["x4"]
-  R4 --> R5["x5"]
-</Mermaid>
-
-而 Transformer 不这样做。
-
-Self-Attention 会把整句表示矩阵一次性拿出来：
-
-$$
-X\in\mathbb{R}^{n\times d_{\text{model}}}
-$$
-
-然后直接做矩阵乘法：
-
-$$
-Q=XW^Q,\quad K=XW^K,\quad V=XW^V
-$$
-
-再做：
-
-$$
-S=QK^\top
-$$
-
-这类操作非常适合 GPU，因为它们都是大块矩阵乘法，也就是 GEMM。
-
-<Mermaid>
-flowchart LR
-  X["整句矩阵 X"] --> Q["矩阵乘法生成 Q"]
-  X --> K["矩阵乘法生成 K"]
-  X --> V["矩阵乘法生成 V"]
-  Q --> S["QK^T"]
-  K --> S
-  S --> A["Softmax"]
-  A --> O["AV"]
-  V --> O
-</Mermaid>
-
-这就是 Transformer 的硬件友好性：它让很多 token 的计算同时发生，而不是按 token 顺序一个个推进。
-
-所以在训练时，Transformer 可以同时利用多个维度的并行：
-
-- batch 维度：多条句子一起算
-- sequence 维度：一句话里的多个 token 一起算
-- hidden 维度：每个向量里的多个维度一起算
-- head 维度：多个 attention head 一起算
-
-<Mermaid>
-flowchart TD
-  GPU["GPU 并发"] --> Batch["batch 并行"]
-  GPU --> Seq["sequence 并行"]
-  GPU --> Hidden["hidden 维度并行"]
-  GPU --> Head["multi-head 并行"]
-</Mermaid>
-
-Transformer贴合GPU并行优势。它不只是“算法好”，而是它的计算形态能够充分发挥硬件优势, 吕布骑上了赤兔。
-
-### 3) 计算量优势到底在哪里
-
-严格说，Transformer 的 Self-Attention 不是在所有情况下都更省计算。
-
-Self-Attention 的核心打分是：
-
-$$
-QK^\top
-$$
-
-如果句长是 $n$，维度是 $d$，那么它大致需要：
-
-$$
-O(n^2d)
-$$
-
-因为每个 token 都要看所有 token，所以会有 $n\times n$ 的注意力矩阵。句子特别长时，这个二次复杂度并不便宜。
-
-但 Transformer 的优势不只看理论 FLOPs，还要看三件事。
-
-第一，Transformer 的计算可以并行。
-
-RNN 可能每一步计算量不大，但它很多步骤必须顺序做；Transformer 单层计算量可能更大，但能一次性并行铺开。在 GPU 上，并行矩阵乘法往往比串行小计算更有效率。
-
-第二，Transformer 的信息路径更短。
-
-在 RNN 中，句首 token 要影响句尾 token，需要沿着时间步一步步传过去：
-
-$$
-x_1\rightarrow h_1\rightarrow h_2\rightarrow \dots \rightarrow h_n
-$$
-
-路径长度大约是 $O(n)$。
-
-而在 Self-Attention 中，任意两个 token 可以在一层里直接交互：
-
-$$
-x_i\rightarrow x_j
-$$
-
-路径长度接近 $O(1)$。
-
-<Mermaid>
-flowchart LR
-  A["RNN: 逐步传递"] --> B["长路径"]
-  C["Attention: 直接连接"] --> D["短路径"]
-  B --> Hard["长距离依赖更难学"]
-  D --> Easy["长距离依赖更容易学"]
-</Mermaid>
-
-这对翻译很关键。因为一个词的含义经常由很远处的词决定，比如主语、宾语、修饰关系、指代关系。路径越短，信息越不容易在传递过程中变弱。
-
-第三，Transformer 的主要计算是规则矩阵乘法。
-
-规则矩阵乘法有大量成熟优化：GPU kernel、张量核心、混合精度、批量化、算子融合等。理论复杂度只是一部分，实际训练速度还取决于硬件利用率。
-
-所以 Transformer 的“计算量优势”更准确地说，是：
-
-- 它不一定在 FLOPs 上永远最少
-- 但它把计算组织成了更容易并行、更容易优化、更容易堆规模的形式
-- 在大数据和大 GPU 集群上，它能把更多计算真正转化成模型能力
-
-### 小结
-
-Transformer 之所以成为主流，不只是因为 Attention 这个想法漂亮，而是因为它同时满足了三个条件：
-
-1. 结构清晰：Attention + MLP
-2. 可扩展：宽度、深度、head 数、FFN 维度都能继续放大
-3. 硬件友好：核心计算是大规模矩阵乘法，能吃满 GPU 并发
-
-换句话说，Transformer 不只是一个翻译模型结构，它更像是一种把“语言理解”改写成“可并行矩阵计算”的方法。
-
-这也是为什么后来的大语言模型基本都沿着 Transformer 继续放大：模型越大，数据越多，算力越强，这个结构越能显出优势。
