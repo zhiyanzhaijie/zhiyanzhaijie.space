@@ -15,10 +15,12 @@ script = []
 script = []
 
 [web.wasm_opt]
-level = "0"
-debug = true
-keep_names = true
+level = "z"
+debug = false
+keep_names = false
+memory_packing = true
+extra_features = ["--converge"]
 
-[web.watcher]
-index_on_404 = true
-watch_path = ["src", "content"]
+[web]
+pre_compress = true
+resource_strategy = "aggressive"
