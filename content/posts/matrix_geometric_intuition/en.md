@@ -800,6 +800,7 @@ The outer product between a column vector from the left matrix and a row vector 
 This is the geometric intuition from the outer-product viewpoint.
 
 --- 
+
 ## Closing Remarks
 
 As a mathematical form, matrices do a remarkably good job of decomposing and analyzing how parts of physical reality operate.  
